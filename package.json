@@ -10,7 +10,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "ts-node src/seeders/db-seeder.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register src/seeders"
   },
   "author": "Rizqiansyah Ramadhan",
   "license": "ISC",
@@ -32,6 +32,7 @@
     "pg": "^8.13.1",
     "serverless-http": "^3.2.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3"
   },
   "devDependencies": {

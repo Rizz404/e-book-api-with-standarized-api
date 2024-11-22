@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "/",
     "target": "ESNext",
     "module": "CommonJS",
     "outDir": "dist",
@@ -7,8 +8,13 @@
     "strict": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@seeders/*": ["src/seeders/*"],
+      "@config/*": ["src/config/*"]
+    }
   },
+
   "include": ["src/**/*"],
   "exclude": ["src/__tests__/**/*"]
 }

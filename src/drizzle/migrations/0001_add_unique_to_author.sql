@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "authors_name_index" ON "authors" USING btree ("name");
