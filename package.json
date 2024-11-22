@@ -8,11 +8,14 @@
     "start": "node dist/index.js",
     "build": "tsc",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "ts-node src/seeders/db-seeder.ts"
   },
   "author": "Rizqiansyah Ramadhan",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^9.2.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
@@ -22,7 +25,6 @@
     "drizzle-kit": "^0.28.1",
     "drizzle-orm": "^0.36.3",
     "express": "^4.21.1",
-    "faker": "^5.5.3",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
