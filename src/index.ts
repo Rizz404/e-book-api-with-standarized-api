@@ -7,6 +7,8 @@ import morgan from "morgan";
 import "dotenv/config";
 import userRoutes from "./routes/user-routes";
 import authRoutes from "./routes/auth-routes";
+import compression from "compression";
+import UserTable from "./models/user-model";
 
 // * INIT
 const app = express();
@@ -20,6 +22,7 @@ app.use(cors());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(cookieParser());
+app.use(compression());
 app.use(morgan("dev"));
 app.use("/api", router);
 
