@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import "dotenv/config";
 import userRoutes from "./routes/user-routes";
+import authRoutes from "./routes/auth-routes";
 
 // * INIT
 const app = express();
@@ -24,6 +25,7 @@ app.use("/api", router);
 
 // * Routes
 router.use("/users", userRoutes);
+router.use("/auth", authRoutes);
 
 // * Server
 app.listen(PORT, () => console.log(`Server run on port ${PORT}`));

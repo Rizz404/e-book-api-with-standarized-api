@@ -1,4 +1,10 @@
-import { sql } from "drizzle-orm";
+import {
+  InferColumnsDataTypes,
+  InferInsertModel,
+  InferModelFromColumns,
+  InferSelectModel,
+  sql,
+} from "drizzle-orm";
 import {
   boolean,
   pgEnum,
@@ -32,5 +38,8 @@ const UserTable = pgTable(
   },
   (table) => [uniqueIndex().on(table.username), uniqueIndex().on(table.email)]
 );
+
+export type UserSelectType = InferSelectModel<typeof UserTable>;
+export type UserInsertType = InferInsertModel<typeof UserTable>;
 
 export default UserTable;

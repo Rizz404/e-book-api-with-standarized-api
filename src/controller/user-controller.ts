@@ -5,6 +5,18 @@ import {
   createErrorResponse,
   createSuccessResponse,
 } from "../utils/api-response-util";
+import { eq } from "drizzle-orm";
+
+export const userResponse = {
+  id: UserTable.id,
+  username: UserTable.username,
+  email: UserTable.email,
+  role: UserTable.role,
+  profilePicture: UserTable.profilePicture,
+  isVerified: UserTable.isVerified,
+  createdAt: UserTable.createdAt,
+  updatedAt: UserTable.updatedAt,
+};
 
 export const createUser: RequestHandler = async (req, res) => {
   try {
@@ -14,10 +26,31 @@ export const createUser: RequestHandler = async (req, res) => {
 
 export const getUsers: RequestHandler = async (req, res) => {
   try {
-    const users = await db.select().from(UserTable);
+    const users = await db.select(userResponse).from(UserTable);
 
-    await createSuccessResponse(req, res, users);
+    createSuccessResponse(res, users);
   } catch (error) {
-    await createErrorResponse(req, res, error);
+    createErrorResponse(res, error);
+  }
+};
+
+// * Selalu kembalikan array kalau select pakai .select bukan .query
+export const getUserById: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const users = await db
+      .select(userResponse)
+      .from(UserTable)
+      .where((table) => eq(table.id, userId))
+      .limit(1);
+
+    if (!users.length) {
+      createErrorResponse(res, "User not found", 404);
+      return; // * Harus seperti ini returnnya sekarang
+    }
+
+    createSuccessResponse(res, users[0]);
+  } catch (error) {
+    createErrorResponse(res, error);
   }
 };

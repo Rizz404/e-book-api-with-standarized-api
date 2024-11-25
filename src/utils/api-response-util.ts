@@ -1,15 +1,14 @@
 import { API_VERSION, TRACE_ID_PREFIX } from "../constants/api-constants";
 import crypto from "crypto";
-import { Request, Response } from "express";
-import convertToXML from "./convert-xml-util";
+import { Response } from "express";
 
-interface APIMetadata {
+export interface APIMetadata {
   version: string;
   timestamp: string;
   trace_id?: string;
 }
 
-interface APIResponse<T> {
+export interface APIResponse<T> {
   status: boolean;
   statusCode: number;
   message: string;
@@ -37,39 +36,6 @@ const createMetadata = (includedTraceId: boolean = false): APIMetadata => {
   return metaData;
 };
 
-// * Fungsi untuk menentukan format response berdasarkan Accept header
-const getResponseFormat = (req: Request): "json" | "xml" => {
-  const acceptHeader = req.headers.accept?.toLowerCase() || "";
-  return acceptHeader.includes("application/xml") ? "xml" : "json";
-};
-
-export const sendResponse = async <T>(
-  req: Request,
-  res: Response,
-  responseData: APIResponse<T>
-): Promise<void> => {
-  const format = getResponseFormat(req);
-
-  res.setHeader(
-    "Content-Type",
-    format === "xml" ? "application/xml" : "application/json"
-  );
-
-  try {
-    if (format === "xml") {
-      const xmlResponse = convertToXML(responseData);
-      res.send(xmlResponse);
-    } else {
-      res.json(responseData);
-    }
-  } catch (error) {
-    // * Fallback ke JSON jika ada error dalam konversi XML
-    console.error("Error converting response:", error);
-    res.setHeader("Content-Type", "application/json");
-    res.json(responseData);
-  }
-};
-
 export const getErrorMessage = (error: unknown) => {
   let message: string;
 
@@ -86,14 +52,13 @@ export const getErrorMessage = (error: unknown) => {
   return message;
 };
 
-export const createSuccessResponse = async (
-  req: Request,
+export const createSuccessResponse = <T>(
   res: Response,
-  data: any,
+  data: T,
   message: string = "success",
   statusCode: number = 200
-): Promise<void> => {
-  const response: APIResponse<typeof data> = {
+) => {
+  const apiResponse: APIResponse<T> = {
     status: true,
     statusCode,
     message,
@@ -101,21 +66,20 @@ export const createSuccessResponse = async (
     meta: createMetadata(),
   };
 
-  await sendResponse(req, res, response);
+  res.status(statusCode).json(apiResponse);
 };
 
-export const createErrorResponse = async (
-  req: Request,
+export const createErrorResponse = (
   res: Response,
   message: unknown,
   statusCode: number = 500
-): Promise<void> => {
-  const response: APIResponse<never> = {
-    status: true,
+) => {
+  const apiResponse: APIResponse<never> = {
+    status: false,
     statusCode,
     message: getErrorMessage(message),
     meta: createMetadata(),
   };
 
-  await sendResponse(req, res, response);
+  res.status(statusCode).json(apiResponse);
 };
