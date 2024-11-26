@@ -31,7 +31,7 @@ const schemaValidatorMiddleware = (
         message: message.replace(/['"]/g, ""),
         type,
       }));
-      return createErrorResponse(res, "Validation failed", 442, joiError);
+      return createErrorResponse(res, "Validation failed", 400, joiError);
     }
 
     req.body = value;

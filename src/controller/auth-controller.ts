@@ -9,23 +9,29 @@ import UserTable, {
 } from "../models/user-model";
 import bcrypt from "bcrypt";
 import db from "../config/database-config";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 
 export const signUp: RequestHandler = async (req, res) => {
   try {
-    const { username, email, password }: Partial<UserInsertType> = req.body;
-
-    if (!username || !email || !password) {
-      return createErrorResponse(
-        res,
-        "Username, email, and password are required",
-        400,
-      );
-    }
+    const { username, email, password }: UserInsertType = req.body;
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = (
+      await db
+        .select()
+        .from(UserTable)
+        .where((table) =>
+          or(eq(table.username, username), eq(table.email, email)),
+        )
+        .limit(1)
+    )[0];
+
+    if (user) {
+      return createErrorResponse(res, "User already exist", 400);
+    }
 
     const newUser = await db
       .insert(UserTable)
@@ -39,15 +45,7 @@ export const signUp: RequestHandler = async (req, res) => {
 
 export const signIn: RequestHandler = async (req, res) => {
   try {
-    const { username, email, password }: Partial<UserSelectType> = req.body;
-
-    if (!(username || email) || !password) {
-      return createErrorResponse(
-        res,
-        "Username or email and password are required",
-        400,
-      );
-    }
+    const { username, email, password }: UserSelectType = req.body;
 
     if (username && email) {
       return createErrorResponse(res, "Pick username or email for login", 400);

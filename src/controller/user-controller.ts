@@ -1,12 +1,13 @@
 import { RequestHandler } from "express";
 import db from "../config/database-config";
-import UserTable from "../models/user-model";
+import UserTable, { UserInsertType } from "../models/user-model";
 import {
   createErrorResponse,
   createSuccessResponse,
 } from "../utils/api-response-util";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import UserProfileTable from "../models/user-profile-model";
+import bcrypt from "bcrypt";
 
 export const userResponse = {
   id: UserTable.id,
@@ -21,8 +22,38 @@ export const userResponse = {
 
 export const createUser: RequestHandler = async (req, res) => {
   try {
-    const {} = req.body;
-  } catch (error) {}
+    const { username, email, password, role, profilePicture }: UserInsertType =
+      req.body;
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = (
+      await db
+        .select()
+        .from(UserTable)
+        .where((table) =>
+          or(eq(table.username, username), eq(table.email, email)),
+        )
+        .limit(1)
+    )[0];
+
+    if (user) {
+      return createErrorResponse(res, "User already exist", 400);
+    }
+
+    const newUser = await db.insert(UserTable).values({
+      username,
+      email,
+      password: hashedPassword,
+      role,
+      profilePicture,
+    });
+
+    createSuccessResponse(res, newUser, "User created successfully", 201);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
 };
 
 export const getUsers: RequestHandler = async (req, res) => {
