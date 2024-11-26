@@ -8,10 +8,12 @@ import "dotenv/config";
 import userRoutes from "./routes/user-routes";
 import authRoutes from "./routes/auth-routes";
 import compression from "compression";
-import UserTable from "./models/user-model";
+import http from "http";
+import { pool } from "./config/database-config";
 
 // * INIT
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 const router = express.Router();
 
@@ -30,5 +32,35 @@ app.use("/api", router);
 router.use("/users", userRoutes);
 router.use("/auth", authRoutes);
 
+// * Global Error Handlers
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 // * Server
-app.listen(PORT, () => console.log(`Server run on port ${PORT}`));
+server.listen(PORT, () =>
+  console.log(`Server run on port http://localhost:${PORT}`),
+);
+
+// * Graceful Shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received. Closing server gracefully...");
+  server.close(() => {
+    console.log("All connections closed. Server shut down.");
+  });
+});
+
+process.on("SIGINT", async () => {
+  console.log("SIGINT received (Ctrl+C). Closing server gracefully...");
+  console.log("Close database pool");
+  await pool.end();
+  server.close(() => {
+    console.log("All connections closed. Server shut down.");
+  });
+});
