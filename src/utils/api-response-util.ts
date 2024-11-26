@@ -73,11 +73,13 @@ export const createErrorResponse = (
   res: Response,
   message: unknown,
   statusCode: number = 500,
+  errors?: string[] | { message: string; type?: string }[],
 ) => {
   const apiResponse: APIResponse<never> = {
     status: false,
     statusCode,
     message: getErrorMessage(message),
+    ...(errors && { errors }),
     meta: createMetadata(),
   };
 
