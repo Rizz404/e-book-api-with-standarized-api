@@ -17,12 +17,11 @@ export const signUp: RequestHandler = async (req, res) => {
     const { username, email, password }: Partial<UserInsertType> = req.body;
 
     if (!username || !email || !password) {
-      createErrorResponse(
+      return createErrorResponse(
         res,
         "Username, email, and password are required",
         400,
       );
-      return;
     }
 
     const salt = await bcrypt.genSalt();
@@ -43,17 +42,15 @@ export const signIn: RequestHandler = async (req, res) => {
     const { username, email, password }: Partial<UserSelectType> = req.body;
 
     if (!(username || email) || !password) {
-      createErrorResponse(
+      return createErrorResponse(
         res,
         "Username or email and password are required",
         400,
       );
-      return;
     }
 
     if (username && email) {
-      createErrorResponse(res, "Pick username or email for login", 400);
-      return;
+      return createErrorResponse(res, "Pick username or email for login", 400);
     }
 
     // * Selalu kembalikan array ya, jangan lupa
@@ -73,15 +70,13 @@ export const signIn: RequestHandler = async (req, res) => {
     )[0];
 
     if (!user) {
-      createErrorResponse(res, "User not found", 404);
-      return;
+      return createErrorResponse(res, "User not found", 404);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      createErrorResponse(res, "Password not match", 400);
-      return;
+      return createErrorResponse(res, "Password not match", 400);
     }
 
     const accessToken = jwt.sign(
@@ -121,8 +116,7 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      createErrorResponse(res, "Unauthorized", 401);
-      return;
+      return createErrorResponse(res, "Unauthorized", 401);
     }
 
     const decoded = jwt.verify(
@@ -131,8 +125,7 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
     ) as { userId: string };
 
     if (!decoded) {
-      createErrorResponse(res, "Invalid token", 403);
-      return;
+      return createErrorResponse(res, "Invalid token", 403);
     }
 
     const user = (
@@ -144,8 +137,7 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
     )[0];
 
     if (!user) {
-      createErrorResponse(res, "User not found", 404);
-      return;
+      return createErrorResponse(res, "User not found", 404);
     }
 
     const newAccessToken = jwt.sign(

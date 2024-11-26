@@ -6,6 +6,7 @@ import {
   createSuccessResponse,
 } from "../utils/api-response-util";
 import { eq } from "drizzle-orm";
+import UserProfileTable from "../models/user-profile-model";
 
 export const userResponse = {
   id: UserTable.id,
@@ -45,11 +46,32 @@ export const getUserById: RequestHandler = async (req, res) => {
       .limit(1);
 
     if (!users.length) {
-      createErrorResponse(res, "User not found", 404);
-      return; // * Harus seperti ini returnnya sekarang
+      return createErrorResponse(res, "User not found", 404);
     }
 
     createSuccessResponse(res, users[0]);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const getUserProfile: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.user!;
+    const user = (
+      await db
+        .select()
+        .from(UserTable)
+        .where((table) => eq(table.id, id))
+        .limit(1)
+        .leftJoin(UserProfileTable, eq(UserTable.id, UserProfileTable.userId))
+    )[0];
+
+    if (!user) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    createSuccessResponse(res, user);
   } catch (error) {
     createErrorResponse(res, error);
   }
