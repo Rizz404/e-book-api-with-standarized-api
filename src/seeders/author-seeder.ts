@@ -21,7 +21,7 @@ const seedAuthors = async () => {
       }
 
       await db.insert(AuthorTable).values({
-        // @ts-expect-error
+        // @ts-expect-error : Ngak tau kenapa ini
         name: authorName,
         birthDate: faker.date.birthdate(),
         deathDate: faker.date.future(),

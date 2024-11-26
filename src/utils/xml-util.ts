@@ -24,13 +24,13 @@ const getResponseFormat = (req: Request): "json" | "xml" => {
 export const sendResponse = async <T>(
   req: Request,
   res: Response,
-  responseData: APIResponse<T>
+  responseData: APIResponse<T>,
 ): Promise<void> => {
   const format = getResponseFormat(req);
 
   res.setHeader(
     "Content-Type",
-    format === "xml" ? "application/xml" : "application/json"
+    format === "xml" ? "application/xml" : "application/json",
   );
 
   try {

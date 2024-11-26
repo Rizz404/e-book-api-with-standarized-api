@@ -1,4 +1,5 @@
-// * Default namanya sama kaya keynya jadi untuk yang lebih dari satu kata buat pake snake case
+// * Default namanya sama kaya keynya jadi untuk yang lebih dari
+// * satu kata buat pake snake case
 import UserTable, { enumRole } from "../models/user-model";
 import UserProfileTable from "../models/user-profile-model";
 import BookTable, { enumBookStatus } from "../models/book-model";

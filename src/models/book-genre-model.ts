@@ -12,7 +12,7 @@ const BookGenreTable = pgTable(
       .references(() => GenreTable.id)
       .notNull(),
   },
-  (table) => [primaryKey({ columns: [table.bookId, table.genreId] })]
+  (table) => [primaryKey({ columns: [table.bookId, table.genreId] })],
 );
 
 export default BookGenreTable;

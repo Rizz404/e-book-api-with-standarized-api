@@ -19,7 +19,7 @@ const GenreTable = pgTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [uniqueIndex().on(table.name)]
+  (table) => [uniqueIndex().on(table.name)],
 );
 
 export default GenreTable;

@@ -56,7 +56,7 @@ export const createSuccessResponse = <T>(
   res: Response,
   data: T,
   message: string = "success",
-  statusCode: number = 200
+  statusCode: number = 200,
 ) => {
   const apiResponse: APIResponse<T> = {
     status: true,
@@ -72,7 +72,7 @@ export const createSuccessResponse = <T>(
 export const createErrorResponse = (
   res: Response,
   message: unknown,
-  statusCode: number = 500
+  statusCode: number = 500,
 ) => {
   const apiResponse: APIResponse<never> = {
     status: false,

@@ -28,7 +28,7 @@ const UserTable = pgTable(
     profilePicture: varchar("profile_picture", { length: 255 })
       .notNull()
       .default(
-        "https://i.pinimg.com/474x/fe/64/11/fe64116a7f610dbee15e840629fc7e67.jpg"
+        "https://i.pinimg.com/474x/fe/64/11/fe64116a7f610dbee15e840629fc7e67.jpg",
       ),
     isVerified: boolean().default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
@@ -36,7 +36,7 @@ const UserTable = pgTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [uniqueIndex().on(table.username), uniqueIndex().on(table.email)]
+  (table) => [uniqueIndex().on(table.username), uniqueIndex().on(table.email)],
 );
 
 export type UserSelectType = InferSelectModel<typeof UserTable>;

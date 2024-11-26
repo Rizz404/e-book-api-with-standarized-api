@@ -54,7 +54,7 @@ const BookTable = pgTable(
       .default(sql`CURRENT_TIMESTAMP`),
   },
   // * Nama boleh ada yang sama tapi slugnya tidak, karena ditambah seller username
-  (table) => [index().on(table.title), uniqueIndex().on(table.slug)]
+  (table) => [index().on(table.title), uniqueIndex().on(table.slug)],
 );
 
 export default BookTable;

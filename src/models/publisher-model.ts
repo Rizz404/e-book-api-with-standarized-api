@@ -22,7 +22,7 @@ const PublisherTable = pgTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [uniqueIndex().on(table.name), uniqueIndex().on(table.email)]
+  (table) => [uniqueIndex().on(table.name), uniqueIndex().on(table.email)],
 );
 
 export default PublisherTable;

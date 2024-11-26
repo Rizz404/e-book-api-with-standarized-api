@@ -20,14 +20,14 @@ const AuthorTable = pgTable(
     profilePicture: varchar("profile_picture", { length: 255 })
       .notNull()
       .default(
-        "https://i.pinimg.com/236x/11/64/4b/11644bef2986a35c7b2e2f3886cddb3f.jpg"
+        "https://i.pinimg.com/236x/11/64/4b/11644bef2986a35c7b2e2f3886cddb3f.jpg",
       ),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [uniqueIndex().on(table.name)]
+  (table) => [uniqueIndex().on(table.name)],
 );
 
 export default AuthorTable;

@@ -14,7 +14,7 @@ const seedLanguages = async () => {
         .select()
         .from(LanguageTable)
         .where((table) =>
-          or(eq(table.code, languageCode), eq(table.name, languageName))
+          or(eq(table.code, languageCode), eq(table.name, languageName)),
         )
         .limit(1);
 

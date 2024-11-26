@@ -20,7 +20,7 @@ export const signUp: RequestHandler = async (req, res) => {
       createErrorResponse(
         res,
         "Username, email, and password are required",
-        400
+        400,
       );
       return;
     }
@@ -32,7 +32,7 @@ export const signUp: RequestHandler = async (req, res) => {
       .insert(UserTable)
       .values({ username, email, password: hashedPassword });
 
-    createSuccessResponse(res, newUser, `User sign up successfully`, 201);
+    createSuccessResponse(res, newUser, "User sign up successfully", 201);
   } catch (error) {
     createErrorResponse(res, error);
   }
@@ -46,7 +46,7 @@ export const signIn: RequestHandler = async (req, res) => {
       createErrorResponse(
         res,
         "Username or email and password are required",
-        400
+        400,
       );
       return;
     }
@@ -94,14 +94,14 @@ export const signIn: RequestHandler = async (req, res) => {
       process.env.JWT_ACCESS_TOKEN as string,
       {
         expiresIn: "1d",
-      }
+      },
     );
 
     // ! gak bisa langsung string inget
     const refreshToken = jwt.sign(
       { userId: user.id },
       process.env.JWT_REFRESH_TOKEN as string,
-      { expiresIn: "30d" }
+      { expiresIn: "30d" },
     );
 
     const userCredentials = {
@@ -127,7 +127,7 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
 
     const decoded = jwt.verify(
       refreshToken,
-      process.env.JWT_REFRESH_TOKEN as string
+      process.env.JWT_REFRESH_TOKEN as string,
     ) as { userId: string };
 
     if (!decoded) {
@@ -156,14 +156,14 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_ACCESS_TOKEN as string,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     createSuccessResponse(
       res,
       { newAccessToken },
       "Successfully get new access token",
-      201
+      201,
     );
   } catch (error) {
     createErrorResponse(res, error);

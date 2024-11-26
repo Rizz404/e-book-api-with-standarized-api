@@ -7,7 +7,7 @@ const LanguageTable = pgTable(
     code: varchar({ length: 20 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
   },
-  (table) => [uniqueIndex().on(table.code), uniqueIndex().on(table.name)]
+  (table) => [uniqueIndex().on(table.code), uniqueIndex().on(table.name)],
 );
 
 export default LanguageTable;

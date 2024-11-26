@@ -31,7 +31,7 @@ export const authMiddleware = ({
         const accessToken = authHeader.split(" ")[1];
         const decoded = jwt.verify(
           accessToken,
-          process.env.JWT_ACCESS_TOKEN as string
+          process.env.JWT_ACCESS_TOKEN as string,
         ) as ReqUser;
 
         if (!decoded.id) {
@@ -45,7 +45,7 @@ export const authMiddleware = ({
           createErrorResponse(
             res,
             "Something wrong cause req.user not initialized",
-            403
+            403,
           );
           return;
         }

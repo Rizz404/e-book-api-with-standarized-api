@@ -23,7 +23,7 @@ const BookPictureTable = pgTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [uniqueIndex().on(table.bookId, table.isCover)]
+  (table) => [uniqueIndex().on(table.bookId, table.isCover)],
 );
 
 export default BookPictureTable;
