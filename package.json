@@ -2,10 +2,10 @@
   "name": "e-book-api",
   "version": "1.0.0",
   "description": "This is api for e-book",
-  "main": "src/index.ts",
+  "main": "src/main.ts",
   "scripts": {
-    "dev": "nodemon --watch .env --watch src/**/*.ts src/index.ts",
-    "start": "node dist/index.js",
+    "dev": "nodemon --watch .env --watch src/**/*.ts src/main.ts",
+    "start": "node dist/main.js",
     "build": "tsc",
     "lint": "eslint --fix",
     "db:generate": "drizzle-kit generate",
