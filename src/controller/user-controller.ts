@@ -3,11 +3,15 @@ import db from "../config/database-config";
 import UserTable, { UserInsertType } from "../models/user-model";
 import {
   createErrorResponse,
+  createPaginatedResponse,
   createSuccessResponse,
 } from "../utils/api-response-util";
-import { eq, or } from "drizzle-orm";
+import { desc, eq, or } from "drizzle-orm";
 import UserProfileTable from "../models/user-profile-model";
 import bcrypt from "bcrypt";
+import parsePagination from "../utils/parse-pagination";
+import { addFilters } from "../utils/query-utils";
+import { count } from "drizzle-orm";
 
 export const userResponse = {
   id: UserTable.id,
@@ -58,9 +62,53 @@ export const createUser: RequestHandler = async (req, res) => {
 
 export const getUsers: RequestHandler = async (req, res) => {
   try {
-    const users = await db.select(userResponse).from(UserTable);
+    const {
+      page = "1",
+      limit = "10",
+      role,
+      isVerified,
+    } = req.query as unknown as {
+      page?: string;
+      limit?: string;
+      role?: "USER" | "ADMIN";
+      isVerified?: boolean;
+    };
 
-    createSuccessResponse(res, users);
+    // * Validasi dan parsing `page` dan `limit` pake function
+    const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
+
+    // * Filter
+    const filters = addFilters(UserTable, [
+      role ? (table) => eq(table.role, role) : undefined,
+      isVerified !== undefined
+        ? (table) => eq(table.isVerified, isVerified)
+        : undefined,
+    ]);
+
+    const totalItems = await db
+      .select({ count: count() })
+      .from(UserTable)
+      .where(filters);
+
+    // * Urutannya SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, OFFSET
+    const users = await db
+      .select(userResponse)
+      .from(UserTable)
+      .leftJoin(UserProfileTable, eq(UserTable.id, UserProfileTable.userId))
+      .where(filters)
+      .orderBy(desc(UserTable.createdAt))
+      .limit(parseInt(limit))
+      .offset(offset);
+
+    createSuccessResponse(
+      res,
+      createPaginatedResponse(
+        users,
+        currentPage,
+        itemsPerPage,
+        totalItems[0]?.count || 0,
+      ),
+    );
   } catch (error) {
     createErrorResponse(res, error);
   }
@@ -70,17 +118,20 @@ export const getUsers: RequestHandler = async (req, res) => {
 export const getUserById: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const users = await db
-      .select(userResponse)
-      .from(UserTable)
-      .where((table) => eq(table.id, userId))
-      .limit(1);
+    const user = (
+      await db
+        .select(userResponse)
+        .from(UserTable)
+        .leftJoin(UserProfileTable, eq(UserTable.id, UserProfileTable.userId))
+        .where((table) => eq(table.id, userId))
+        .limit(1)
+    )[0];
 
-    if (!users.length) {
+    if (!user) {
       return createErrorResponse(res, "User not found", 404);
     }
 
-    createSuccessResponse(res, users[0]);
+    createSuccessResponse(res, user);
   } catch (error) {
     createErrorResponse(res, error);
   }
@@ -103,6 +154,94 @@ export const getUserProfile: RequestHandler = async (req, res) => {
     }
 
     createSuccessResponse(res, user);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const updateUserById: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const {
+      username,
+      email,
+      profilePicture,
+      isVerified,
+      role,
+    }: Partial<UserInsertType> = req.body;
+
+    const existingUser = (
+      await db
+        .select(userResponse)
+        .from(UserTable)
+        .where((table) => eq(table.id, userId))
+        .limit(1)
+    )[0];
+
+    if (!existingUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    const updatedUser = (
+      await db
+        .update(UserTable)
+        .set({
+          ...(username !== undefined && { username }),
+          ...(email !== undefined && { email }),
+          ...(profilePicture !== undefined && { profilePicture }),
+          ...(isVerified !== undefined && { isVerified }),
+          ...(role !== undefined && { role }),
+        })
+        .where(eq(UserTable.id, userId))
+        .returning(userResponse)
+    )[0];
+
+    createSuccessResponse(res, updatedUser);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const updateUserProfile: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return createErrorResponse(
+        res,
+        "Something went wrong, id not found",
+        403,
+      );
+    }
+
+    const { username, email, profilePicture }: Partial<UserInsertType> =
+      req.body;
+
+    const existingUser = (
+      await db
+        .select(userResponse)
+        .from(UserTable)
+        .where((table) => eq(table.id, userId))
+        .limit(1)
+    )[0];
+
+    if (!existingUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    const updatedUser = (
+      await db
+        .update(UserTable)
+        .set({
+          ...(username !== undefined && { username }),
+          ...(email !== undefined && { email }),
+          ...(profilePicture !== undefined && { profilePicture }),
+        })
+        .where(eq(UserTable.id, userId))
+        .returning(userResponse)
+    )[0];
+
+    createSuccessResponse(res, updatedUser);
   } catch (error) {
     createErrorResponse(res, error);
   }

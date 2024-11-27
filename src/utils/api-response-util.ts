@@ -6,6 +6,7 @@ export interface APIMetadata {
   version: string;
   timestamp: string;
   trace_id?: string;
+  pagination?: PaginationMetadata;
 }
 
 export interface APIResponse<T> {
@@ -14,6 +15,22 @@ export interface APIResponse<T> {
   message: string;
   data?: T;
   meta: APIMetadata;
+}
+
+export interface PaginationMetadata {
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+  itemsPerPage: number;
+  previousPage: number | null;
+  nextPage: number | null;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginatedData<T> {
+  items: T[];
+  pagination: PaginationMetadata;
 }
 
 const generateTraceId = () => {
@@ -52,18 +69,49 @@ export const getErrorMessage = (error: unknown) => {
   return message;
 };
 
-export const createSuccessResponse = <T>(
+export const createPaginatedResponse = <T>(
+  data: T[],
+  page: number,
+  limit: number,
+  totalItems: number,
+): PaginatedData<T> => {
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    items: data,
+    pagination: {
+      currentPage: page,
+      itemsPerPage: limit,
+      totalItems,
+      totalPages,
+      previousPage: page > 1 ? page - 1 : null,
+      nextPage: page < totalPages ? page + 1 : null,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages,
+    },
+  };
+};
+
+export const createSuccessResponse = <T extends object>(
   res: Response,
-  data: T,
+  data: T | PaginatedData<T>,
   message: string = "success",
   statusCode: number = 200,
 ) => {
-  const apiResponse: APIResponse<T> = {
+  const meta: APIMetadata = {
+    ...createMetadata(),
+  };
+
+  if ("pagination" in data) {
+    meta.pagination = data.pagination;
+  }
+
+  const apiResponse: APIResponse<T | T[]> = {
     status: true,
     statusCode,
     message,
-    data,
-    meta: createMetadata(),
+    data: "pagination" in data ? (data as PaginatedData<T>).items : data,
+    meta,
   };
 
   res.status(statusCode).json(apiResponse);
