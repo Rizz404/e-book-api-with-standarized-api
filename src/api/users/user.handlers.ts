@@ -10,7 +10,7 @@ import bcrypt from "bcrypt";
 import parsePagination from "../../utils/parse-pagination";
 import { addFilters } from "../../utils/query-utils";
 import { count } from "drizzle-orm";
-import UserModel, { UserInsertType } from "./user.model";
+import UserModel, { InsertUserDTO } from "./user.model";
 import UserProfileModel from "../user-profile/user-profile.model";
 
 export const userResponse = {
@@ -27,7 +27,7 @@ export const userResponse = {
 // *==========*==========*==========POST==========*==========*==========*
 export const createUser: RequestHandler = async (req, res) => {
   try {
-    const { username, email, password, role, profilePicture }: UserInsertType =
+    const { username, email, password, role, profilePicture }: InsertUserDTO =
       req.body;
 
     const salt = await bcrypt.genSalt();
@@ -171,7 +171,7 @@ export const updateUserById: RequestHandler = async (req, res) => {
       profilePicture,
       isVerified,
       role,
-    }: Partial<UserInsertType> = req.body;
+    }: Partial<InsertUserDTO> = req.body;
 
     const existingUser = (
       await db
@@ -217,7 +217,7 @@ export const updateUserProfile: RequestHandler = async (req, res) => {
       );
     }
 
-    const { username, email, profilePicture }: Partial<UserInsertType> =
+    const { username, email, profilePicture }: Partial<InsertUserDTO> =
       req.body;
 
     const existingUser = (

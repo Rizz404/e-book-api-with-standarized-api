@@ -33,7 +33,7 @@ const UserModel = pgTable(
   (table) => [uniqueIndex().on(table.username), uniqueIndex().on(table.email)],
 );
 
-export type UserSelectType = InferSelectModel<typeof UserModel>;
-export type UserInsertType = InferInsertModel<typeof UserModel>;
+export type InsertUserDTO = InferSelectModel<typeof UserModel>;
+export type SelectUserDTO = InferInsertModel<typeof UserModel>;
 
 export default UserModel;

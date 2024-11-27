@@ -8,7 +8,7 @@ import {
   updateUserById,
   updateUserProfile,
 } from "./user.handlers";
-import { createUserSchema } from "./user.schema";
+import { createUserSchema } from "./user.validation";
 import { authMiddleware } from "../../middleware/auth-middleware";
 import roleValidationMiddleware from "../../middleware/role-validation-middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";

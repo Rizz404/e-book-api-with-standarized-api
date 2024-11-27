@@ -2,7 +2,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import RATE_LIMITER_OPTION from "../../constants/limiter-constants";
 import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
-import { signInSchema, signUpSchema } from "./auth.schema";
+import { signInSchema, signUpSchema } from "./auth.validation";
 import { refreshExpiredToken, signIn, signUp } from "./auth.handlers";
 import { authMiddleware } from "../../middleware/auth-middleware";
 

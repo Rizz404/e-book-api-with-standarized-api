@@ -8,7 +8,7 @@
 //   updateUserById,
 //   updateUserProfile,
 // } from "./user-profile.handlers";
-// import { createUserSchema } from "./user-profile.schema";
+// import { createUserSchema } from "./user-profile.validation";
 // import { authMiddleware } from "../../middleware/auth-middleware";
 // import roleValidationMiddleware from "../../middleware/role-validation-middleware";
 // import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
