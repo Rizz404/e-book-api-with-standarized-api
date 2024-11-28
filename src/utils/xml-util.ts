@@ -1,5 +1,6 @@
-import { Builder, Options as XML2JSOptions } from "xml2js";
 import { Request, Response } from "express";
+import { Builder, Options as XML2JSOptions } from "xml2js";
+
 import { APIResponse } from "./api-response-util";
 
 const convertToXML = (obj: any): string => {

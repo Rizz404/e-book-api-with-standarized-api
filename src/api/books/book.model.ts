@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   date,
   decimal,
@@ -11,10 +12,10 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+
 import AuthorModel from "../author/author.model";
-import { sql } from "drizzle-orm";
-import PublisherModel from "../publishers/publisher.model";
 import LanguageModel from "../languages/language.model";
+import PublisherModel from "../publishers/publisher.model";
 import UserModel from "../users/user.model";
 
 export const enumBookStatus = pgEnum("book_status", [

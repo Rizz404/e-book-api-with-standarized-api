@@ -1,16 +1,31 @@
-import globals from "globals";
 import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
 import eslintPluginPrettierRecomended from "eslint-plugin-prettier/recommended";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import eslintPluginUnicorn from "eslint-plugin-unicorn";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-  { ignores: ["dist/"] },
-  { files: ["**/*.{js,mjs,cjs,ts}"] },
+  {
+    ignores: ["**/node_modules/**", "**/dist/**"],
+  },
+  { files: ["**/*.{ts,tsx,cts,mts,js,cjs,mjs}"] },
   { files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
+  ...tseslint.configs.stylistic,
+  {
+    plugins: {
+      "simple-import-sort": simpleImportSort,
+      unicorn: eslintPluginUnicorn,
+    },
+    rules: {
+      "simple-import-sort/imports": "warn",
+      "simple-import-sort/exports": "warn",
+    },
+  },
   // {
   //   files: ["tests/**/*.{js,mjs,cjs,ts}"],
   //   ...jest.configs["flat/recomended"],

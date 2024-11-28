@@ -1,4 +1,5 @@
 import express from "express";
+
 import authRoutes from "./api/auth/auth.routes";
 import userRoutes from "./api/users/user.routes";
 

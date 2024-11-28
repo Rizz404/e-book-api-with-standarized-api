@@ -1,13 +1,14 @@
-import { RequestHandler } from "express";
 import bcrypt from "bcrypt";
 import { eq, or } from "drizzle-orm";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import UserModel, { InsertUserDTO, SelectUserDTO } from "../users/user.model";
+
 import db from "../../config/database-config";
 import {
   createErrorResponse,
   createSuccessResponse,
 } from "../../utils/api-response-util";
+import UserModel, { InsertUserDTO, SelectUserDTO } from "../users/user.model";
 
 export const signUp: RequestHandler = async (req, res) => {
   try {

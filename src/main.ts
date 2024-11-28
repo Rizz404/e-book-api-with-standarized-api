@@ -1,16 +1,18 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
-import helmet from "helmet";
-import morgan from "morgan";
 import "dotenv/config";
+
+import bodyParser from "body-parser";
 import compression from "compression";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import express from "express";
+import helmet from "helmet";
 import http from "http";
+import morgan from "morgan";
+
 import { pool } from "./config/database-config";
-import logger from "./utils/logger";
 import limiter from "./config/limiter-config";
 import routes from "./routes";
+import logger from "./utils/logger";
 
 // * INIT
 const app = express();

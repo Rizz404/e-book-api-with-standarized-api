@@ -13,16 +13,16 @@ import UserProfileModel from "../api/user-profile/user-profile.model";
 import UserModel, { enumRole } from "../api/users/user.model";
 
 export {
-  UserModel,
-  UserProfileModel,
+  AuthorModel,
+  BookGenreModel,
   BookModel,
   BookPictureModel,
-  GenreModel,
-  BookGenreModel,
-  AuthorModel,
   BookReviewModel,
+  enumBookStatus,
+  enumRole,
+  GenreModel,
   LanguageModel,
   PublisherModel,
-  enumRole,
-  enumBookStatus,
+  UserModel,
+  UserProfileModel,
 };

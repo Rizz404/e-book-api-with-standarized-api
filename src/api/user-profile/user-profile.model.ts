@@ -1,5 +1,6 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
 import UserModel from "../users/user.model";
 
 const UserProfileModel = pgTable("user_profiles", {

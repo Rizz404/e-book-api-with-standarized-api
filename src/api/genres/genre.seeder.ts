@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
-import db from "../../config/database-config";
 import { eq } from "drizzle-orm";
+
+import db from "../../config/database-config";
 import GenreModel from "./genre.model";
 
 const seedGenres = async () => {

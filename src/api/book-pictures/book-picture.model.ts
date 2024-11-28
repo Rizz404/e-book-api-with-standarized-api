@@ -7,6 +7,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+
 import BookModel from "../books/book.model";
 
 const BookPictureModel = pgTable(

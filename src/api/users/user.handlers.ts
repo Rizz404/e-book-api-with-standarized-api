@@ -1,59 +1,42 @@
+import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
-import db from "../../config/database-config";
+
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response-util";
-import { desc, eq, or } from "drizzle-orm";
-import bcrypt from "bcrypt";
 import parsePagination from "../../utils/parse-pagination";
 import { addFilters } from "../../utils/query-utils";
-import { count } from "drizzle-orm";
-import UserModel, { InsertUserDTO } from "./user.model";
-import UserProfileModel from "../user-profile/user-profile.model";
-
-export const userResponse = {
-  id: UserModel.id,
-  username: UserModel.username,
-  email: UserModel.email,
-  role: UserModel.role,
-  profilePicture: UserModel.profilePicture,
-  isVerified: UserModel.isVerified,
-  createdAt: UserModel.createdAt,
-  updatedAt: UserModel.updatedAt,
-};
+import UserModel, { InsertUserDTO, SelectUserDTO } from "./user.model";
+import {
+  createUserService,
+  deleteUserService,
+  findUserByColumnService,
+  findUserByIdService,
+  findUsersByFiltersService,
+  findUsersLikeColumnService,
+  updateUserService,
+} from "./user.service";
 
 // *==========*==========*==========POST==========*==========*==========*
 export const createUser: RequestHandler = async (req, res) => {
   try {
-    const { username, email, password, role, profilePicture }: InsertUserDTO =
-      req.body;
+    const userData: Pick<
+      InsertUserDTO,
+      "username" | "email" | "password" | "role" | "profilePicture"
+    > = req.body;
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = (
-      await db
-        .select()
-        .from(UserModel)
-        .where((table) =>
-          or(eq(table.username, username), eq(table.email, email)),
-        )
-        .limit(1)
-    )[0];
+    const user = await findUserByColumnService(
+      userData.username,
+      userData.email,
+    );
 
     if (user) {
       return createErrorResponse(res, "User already exist", 400);
     }
 
-    const newUser = await db.insert(UserModel).values({
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      profilePicture,
-    });
+    const newUser = await createUserService(userData);
 
     createSuccessResponse(res, newUser, "User created successfully", 201);
   } catch (error) {
@@ -69,11 +52,9 @@ export const getUsers: RequestHandler = async (req, res) => {
       limit = "10",
       role,
       isVerified,
-    } = req.query as unknown as {
+    } = req.query as unknown as Partial<SelectUserDTO> & {
       page?: string;
       limit?: string;
-      role?: "USER" | "ADMIN";
-      isVerified?: boolean;
     };
 
     // * Validasi dan parsing `page` dan `limit` pake function
@@ -87,179 +68,128 @@ export const getUsers: RequestHandler = async (req, res) => {
         : undefined,
     ]);
 
-    const totalItems = await db
-      .select({ count: count() })
-      .from(UserModel)
-      .where(filters);
-
-    // * Urutannya SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, OFFSET
-    const users = await db
-      .select(userResponse)
-      .from(UserModel)
-      .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
-      .where(filters)
-      .orderBy(desc(UserModel.createdAt))
-      .limit(parseInt(limit))
-      .offset(offset);
+    const { users, totalItems } = await findUsersByFiltersService(
+      limit,
+      offset,
+      filters,
+    );
 
     createSuccessResponse(
       res,
-      createPaginatedResponse(
-        users,
-        currentPage,
-        itemsPerPage,
-        totalItems[0]?.count || 0,
-      ),
+      createPaginatedResponse(users, currentPage, itemsPerPage, totalItems),
     );
   } catch (error) {
     createErrorResponse(res, error);
   }
 };
 
-export const getUserById: RequestHandler = async (req, res) => {
+export const getUsersLikeColumn: RequestHandler = async (req, res) => {
   try {
-    const { userId } = req.params;
-    // * Selalu kembalikan array kalau select pakai .select bukan .query
-    const user = (
-      await db
-        .select(userResponse)
-        .from(UserModel)
-        .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
-        .where((table) => eq(table.id, userId))
-        .limit(1)
-    )[0];
-
-    if (!user) {
-      return createErrorResponse(res, "User not found", 404);
-    }
-
-    createSuccessResponse(res, user);
-  } catch (error) {
-    createErrorResponse(res, error);
-  }
-};
-
-export const getUserProfile: RequestHandler = async (req, res) => {
-  try {
-    const { id } = req.user!;
-    const user = (
-      await db
-        .select()
-        .from(UserModel)
-        .where((table) => eq(table.id, id))
-        .limit(1)
-        .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
-    )[0];
-
-    if (!user) {
-      return createErrorResponse(res, "User not found", 404);
-    }
-
-    createSuccessResponse(res, user);
-  } catch (error) {
-    createErrorResponse(res, error);
-  }
-};
-
-// *==========*==========*==========PATCH==========*==========*==========*
-export const updateUserById: RequestHandler = async (req, res) => {
-  try {
-    const { userId } = req.params;
     const {
-      username,
-      email,
-      profilePicture,
-      isVerified,
-      role,
-    }: Partial<InsertUserDTO> = req.body;
+      page = "1",
+      limit = "10",
+      username = "",
+      email = "",
+    } = req.query as unknown as Partial<SelectUserDTO> & {
+      page?: string;
+      limit?: string;
+    };
 
-    const existingUser = (
-      await db
-        .select(userResponse)
-        .from(UserModel)
-        .where((table) => eq(table.id, userId))
-        .limit(1)
-    )[0];
-
-    if (!existingUser) {
-      return createErrorResponse(res, "User not found", 404);
-    }
-
-    const updatedUser = (
-      await db
-        .update(UserModel)
-        .set({
-          ...(username !== undefined && { username }),
-          ...(email !== undefined && { email }),
-          ...(profilePicture !== undefined && { profilePicture }),
-          ...(isVerified !== undefined && { isVerified }),
-          ...(role !== undefined && { role }),
-        })
-        .where(eq(UserModel.id, userId))
-        .returning(userResponse)
-    )[0];
-
-    createSuccessResponse(res, updatedUser);
-  } catch (error) {
-    createErrorResponse(res, error);
-  }
-};
-
-export const updateUserProfile: RequestHandler = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-
-    if (!userId) {
+    if (username && email) {
       return createErrorResponse(
         res,
-        "Something went wrong, id not found",
-        403,
+        "You can only filter by either username or email, not both.",
+        400, // Bad Request
       );
     }
 
-    const { username, email, profilePicture }: Partial<InsertUserDTO> =
-      req.body;
+    const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
+    const { users, totalItems } = await findUsersLikeColumnService(
+      limit,
+      offset,
+      username ? UserModel.username : UserModel.email,
+      username || email,
+    );
 
-    const existingUser = (
-      await db
-        .select(userResponse)
-        .from(UserModel)
-        .where((table) => eq(table.id, userId))
-        .limit(1)
-    )[0];
-
-    if (!existingUser) {
-      return createErrorResponse(res, "User not found", 404);
-    }
-
-    const updatedUser = (
-      await db
-        .update(UserModel)
-        .set({
-          ...(username !== undefined && { username }),
-          ...(email !== undefined && { email }),
-          ...(profilePicture !== undefined && { profilePicture }),
-        })
-        .where(eq(UserModel.id, userId))
-        .returning(userResponse)
-    )[0];
-
-    createSuccessResponse(res, updatedUser);
+    createSuccessResponse(
+      res,
+      createPaginatedResponse(users, currentPage, itemsPerPage, totalItems),
+    );
   } catch (error) {
     createErrorResponse(res, error);
   }
+};
+
+export const getUser = (by: "req.params" | "req.user"): RequestHandler => {
+  return async (req, res) => {
+    try {
+      const userId = by === "req.params" ? req.params.userId : req.user?.id;
+
+      if (!userId) {
+        return createErrorResponse(
+          res,
+          "Something went wrong, id not found, you must login",
+          403,
+        );
+      }
+
+      const user = await findUserByIdService(userId);
+
+      if (!user) {
+        return createErrorResponse(res, "User not found", 404);
+      }
+
+      createSuccessResponse(res, user);
+    } catch (error) {
+      createErrorResponse(res, error);
+    }
+  };
+};
+
+// *==========*==========*==========PATCH==========*==========*==========*
+export const updateUser = (by: "req.params" | "req.user"): RequestHandler => {
+  return async (req, res) => {
+    try {
+      const userData: Partial<InsertUserDTO> = req.body;
+      const userId = by === "req.params" ? req.params.userId : req.user?.id;
+
+      if (!userId) {
+        return createErrorResponse(
+          res,
+          "Something went wrong, id not found, you must login",
+          403,
+        );
+      }
+
+      const existingUser = await findUserByIdService(userId);
+
+      if (!existingUser) {
+        return createErrorResponse(res, "User not found", 404);
+      }
+
+      const filteredData =
+        by === "req.user"
+          ? {
+              username: userData.username,
+              email: userData.email,
+              profilePicture: userData.profilePicture,
+            }
+          : userData;
+
+      const updatedUser = await updateUserService(userId, filteredData);
+
+      createSuccessResponse(res, updatedUser);
+    } catch (error) {
+      createErrorResponse(res, error);
+    }
+  };
 };
 
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteUserById: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const deletedUser = (
-      await db
-        .delete(UserModel)
-        .where(eq(UserModel.id, userId))
-        .returning(userResponse)
-    )[0];
+    const deletedUser = await deleteUserService(userId);
 
     if (!deletedUser) {
       return createErrorResponse(

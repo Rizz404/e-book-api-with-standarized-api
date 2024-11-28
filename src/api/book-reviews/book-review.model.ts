@@ -1,7 +1,8 @@
-import { pgTable, text, timestamp, uuid, smallint } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import UserModel from "../users/user.model";
+import { pgTable, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
 import BookModel from "../books/book.model";
+import UserModel from "../users/user.model";
 
 const BookReviewModel = pgTable("book_reviews", {
   id: uuid().primaryKey().defaultRandom(),

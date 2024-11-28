@@ -1,5 +1,5 @@
-import winston from "winston";
 import path, { format } from "path";
+import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 
 // * Konfigurasi format log

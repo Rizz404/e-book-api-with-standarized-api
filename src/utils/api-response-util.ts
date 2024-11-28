@@ -1,6 +1,7 @@
-import { API_VERSION, TRACE_ID_PREFIX } from "../constants/api-constants";
 import crypto from "crypto";
 import { Response } from "express";
+
+import { API_VERSION, TRACE_ID_PREFIX } from "../constants/api-constants";
 
 export interface APIMetadata {
   version: string;
@@ -40,7 +41,7 @@ const generateTraceId = () => {
   return `${TRACE_ID_PREFIX}-${timestamp}-${randomPart}`;
 };
 
-const createMetadata = (includedTraceId: boolean = false): APIMetadata => {
+const createMetadata = (includedTraceId = false): APIMetadata => {
   const metaData: APIMetadata = {
     version: API_VERSION,
     timestamp: new Date().toISOString(),
@@ -95,8 +96,8 @@ export const createPaginatedResponse = <T>(
 export const createSuccessResponse = <T extends object>(
   res: Response,
   data: T | PaginatedData<T>,
-  message: string = "success",
-  statusCode: number = 200,
+  message = "success",
+  statusCode = 200,
 ) => {
   const meta: APIMetadata = {
     ...createMetadata(),
@@ -120,7 +121,7 @@ export const createSuccessResponse = <T extends object>(
 export const createErrorResponse = (
   res: Response,
   message: unknown,
-  statusCode: number = 500,
+  statusCode = 500,
   errors?: string[] | { message: string; type?: string }[],
 ) => {
   const apiResponse: APIResponse<never> = {
