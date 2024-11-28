@@ -2,7 +2,7 @@
 // * satu kata buat pake snake case
 
 import AuthorModel from "../api/author/author.model";
-import BookPictureModel from "../api/book-pictures/book-picture.model";
+import BookPictureModel from "../api/book-pictures/book.picture.model";
 import BookReviewModel from "../api/book-reviews/book-review.model";
 import BookModel, { enumBookStatus } from "../api/books/book.model";
 import GenreModel from "../api/genres/genre.model";

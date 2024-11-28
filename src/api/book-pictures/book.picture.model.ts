@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   boolean,
   pgTable,
@@ -26,5 +26,8 @@ const BookPictureModel = pgTable(
   },
   (table) => [uniqueIndex().on(table.bookId, table.isCover)],
 );
+
+export type InsertBookPictureDTO = InferSelectModel<typeof BookPictureModel>;
+export type SelectBookPictureDTO = InferInsertModel<typeof BookPictureModel>;
 
 export default BookPictureModel;

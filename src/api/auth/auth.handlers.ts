@@ -1,9 +1,5 @@
-import bcrypt from "bcrypt";
-import { eq, or } from "drizzle-orm";
 import { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
 
-import db from "../../config/database-config";
 import {
   createErrorResponse,
   createSuccessResponse,

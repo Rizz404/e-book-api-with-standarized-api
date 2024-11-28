@@ -76,14 +76,6 @@ export const getAuthorsLikeColumn: RequestHandler = async (req, res) => {
       limit?: string;
     };
 
-    if (name) {
-      return createErrorResponse(
-        res,
-        "You can only filter by either name or email, not both.",
-        400, // Bad Request
-      );
-    }
-
     const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
     const { authors, totalItems } = await findAuthorsLikeColumnService(
       limit,
