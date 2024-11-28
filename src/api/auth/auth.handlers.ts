@@ -9,31 +9,29 @@ import {
   createSuccessResponse,
 } from "../../utils/api-response-util";
 import UserModel, { InsertUserDTO, SelectUserDTO } from "../users/user.model";
+import {
+  createUserService,
+  findUserByColumnService,
+  findUserByIdService,
+} from "../users/user.services";
+import {
+  decodeRefreshToken,
+  generateAccessToken,
+  generateRefreshToken,
+  validatePassword,
+} from "./auth.services";
 
 export const signUp: RequestHandler = async (req, res) => {
   try {
     const { username, email, password }: InsertUserDTO = req.body;
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = (
-      await db
-        .select()
-        .from(UserModel)
-        .where((table) =>
-          or(eq(table.username, username), eq(table.email, email)),
-        )
-        .limit(1)
-    )[0];
+    const user = await findUserByColumnService(username, email);
 
     if (user) {
       return createErrorResponse(res, "User already exist", 400);
     }
 
-    const newUser = await db
-      .insert(UserModel)
-      .values({ username, email, password: hashedPassword });
+    const newUser = await createUserService({ username, email, password });
 
     createSuccessResponse(res, newUser, "User sign up successfully", 201);
   } catch (error) {
@@ -50,50 +48,23 @@ export const signIn: RequestHandler = async (req, res) => {
     }
 
     // * Selalu kembalikan array ya, jangan lupa
-    const user = (
-      await db
-        .select()
-        .from(UserModel)
-        .where((table) => {
-          if (username) {
-            return eq(table.username, username);
-          }
-          if (email) {
-            return eq(table.email, email);
-          }
-        })
-        .limit(1)
-    )[0];
+    const user = await findUserByColumnService(username, email, true);
 
     if (!user) {
       return createErrorResponse(res, "User not found", 404);
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!user.password) {
+      return createErrorResponse(res, "Password not found", 400);
+    }
 
+    const passwordMatch = await validatePassword(password, user.password);
     if (!passwordMatch) {
       return createErrorResponse(res, "Password not match", 400);
     }
 
-    const accessToken = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-      process.env.JWT_ACCESS_TOKEN as string,
-      {
-        expiresIn: "1d",
-      },
-    );
-
-    // ! gak bisa langsung string inget
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_REFRESH_TOKEN as string,
-      { expiresIn: "30d" },
-    );
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user.id);
 
     const userCredentials = {
       ...user,
@@ -115,37 +86,19 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Unauthorized", 401);
     }
 
-    const decoded = jwt.verify(
-      refreshToken,
-      process.env.JWT_REFRESH_TOKEN as string,
-    ) as { userId: string };
+    const decoded = decodeRefreshToken(refreshToken);
 
     if (!decoded) {
       return createErrorResponse(res, "Invalid token", 403);
     }
 
-    const user = (
-      await db
-        .select()
-        .from(UserModel)
-        .where((table) => eq(table.id, decoded.userId))
-        .limit(1)
-    )[0];
+    const user = await findUserByIdService(decoded.userId);
 
     if (!user) {
       return createErrorResponse(res, "User not found", 404);
     }
 
-    const newAccessToken = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-      process.env.JWT_ACCESS_TOKEN as string,
-      { expiresIn: "1d" },
-    );
+    const newAccessToken = generateAccessToken(user);
 
     createSuccessResponse(
       res,

@@ -6,12 +6,15 @@ import schemaValidatorMiddleware from "../../middleware/schema-validator-middlew
 import {
   createUser,
   deleteUserById,
-  getUser,
+  getCurrentUser,
+  getUserById,
   getUsers,
   getUsersLikeColumn,
-  updateUser,
+  updateCurrentUser,
+  updateCurrentUserPassword,
+  updateUserById,
 } from "./user.handlers";
-import { createUserSchema } from "./user.validation";
+import { createUserSchema } from "./user.validations";
 
 const router = express.Router();
 
@@ -26,16 +29,17 @@ router
   .get(authMiddleware({ authType: "required" }), getUsers);
 router
   .route("/profile")
-  .get(authMiddleware({ authType: "required" }), getUser("req.user"))
-  .patch(authMiddleware({ authType: "required" }), updateUser("req.user"));
+  .get(authMiddleware({ authType: "required" }), getCurrentUser)
+  .patch(authMiddleware({ authType: "required" }), updateCurrentUser);
 router.get("/search", getUsersLikeColumn);
+router.patch("/update-password", updateCurrentUserPassword);
 router
   .route("/:userId")
-  .get(getUser("req.params"))
+  .get(getUserById)
   .patch(
     authMiddleware({ authType: "required" }),
     roleValidationMiddleware(["ADMIN"]),
-    updateUser("req.params"),
+    updateUserById,
   )
   .delete(
     authMiddleware({ authType: "required" }),

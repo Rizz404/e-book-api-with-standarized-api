@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm";
 
 import db from "../../config/database-config";
-import UserProfileModel from "../user-profile/user-profile.model";
+import UserProfileModel from "../user-profile/user.profile.model";
 import UserModel, { InsertUserDTO, SelectUserDTO } from "./user.model";
 
 export const userResponse = {
@@ -23,6 +23,25 @@ export const userResponse = {
   isVerified: UserModel.isVerified,
   createdAt: UserModel.createdAt,
   updatedAt: UserModel.updatedAt,
+};
+
+export const createUserService = async (userData: SelectUserDTO) => {
+  const { username, email, password, role, profilePicture } = userData;
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  return (
+    await db
+      .insert(UserModel)
+      .values({
+        username,
+        email,
+        password: hashedPassword,
+        role,
+        profilePicture,
+      })
+      .returning(userResponse)
+  )[0];
 };
 
 // * Urutannya SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, OFFSET
@@ -71,10 +90,13 @@ export const findUsersLikeColumnService = async (
   return { totalItems, users };
 };
 
-export const findUserByIdService = async (id: string) => {
+export const findUserByIdService = async (id: string, withPassword = false) => {
   return (
     await db
-      .select(userResponse)
+      .select({
+        ...userResponse,
+        ...(withPassword && { password: UserModel.password }),
+      })
       .from(UserModel)
       .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
       .where(eq(UserModel.id, id))
@@ -85,36 +107,18 @@ export const findUserByIdService = async (id: string) => {
 export const findUserByColumnService = async (
   username: string,
   email: string,
+  withPassword = false,
 ) => {
   return (
     await db
-      .select(userResponse)
+      .select({
+        ...userResponse,
+        ...(withPassword && { password: UserModel.password }),
+      })
       .from(UserModel)
       .where(or(eq(UserModel.username, username), eq(UserModel.email, email)))
       .limit(1)
   )[0];
-};
-
-export const createUserService = async (
-  userData: Pick<
-    InsertUserDTO,
-    "username" | "email" | "password" | "role" | "profilePicture"
-  >,
-) => {
-  const { username, email, password, role, profilePicture } = userData;
-  const salt = await bcrypt.genSalt();
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  return await db
-    .insert(UserModel)
-    .values({
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      profilePicture,
-    })
-    .returning(userResponse);
 };
 
 export const updateUserService = async (
@@ -136,6 +140,40 @@ export const updateUserService = async (
       .where(eq(UserModel.id, userId))
       .returning(userResponse)
   )[0];
+};
+
+export const updateUserPasswordService = async (
+  userId: string,
+  storedPassword: string,
+  newPassword: string,
+) => {
+  const user = (
+    await db
+      .select({ password: UserModel.password })
+      .from(UserModel)
+      .where(eq(UserModel.id, userId))
+      .limit(1)
+  )[0];
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Bandingkan password lama
+  const isPasswordValid = await bcrypt.compare(storedPassword, user.password);
+  if (!isPasswordValid) {
+    throw new Error("Incorrect current password");
+  }
+
+  // Hash password baru
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  // Update password di database
+  return await db
+    .update(UserModel)
+    .set({ password: hashedPassword })
+    .where(eq(UserModel.id, userId));
 };
 
 export const deleteUserService = async (userId: string) => {

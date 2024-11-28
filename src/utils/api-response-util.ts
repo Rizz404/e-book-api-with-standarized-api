@@ -95,7 +95,7 @@ export const createPaginatedResponse = <T>(
 
 export const createSuccessResponse = <T extends object>(
   res: Response,
-  data: T | PaginatedData<T>,
+  data: T | PaginatedData<T> | undefined,
   message = "success",
   statusCode = 200,
 ) => {
@@ -103,7 +103,7 @@ export const createSuccessResponse = <T extends object>(
     ...createMetadata(),
   };
 
-  if ("pagination" in data) {
+  if (data !== undefined && "pagination" in data) {
     meta.pagination = data.pagination;
   }
 
@@ -111,7 +111,9 @@ export const createSuccessResponse = <T extends object>(
     status: true,
     statusCode,
     message,
-    data: "pagination" in data ? (data as PaginatedData<T>).items : data,
+    ...(data !== undefined && {
+      data: "pagination" in data ? (data as PaginatedData<T>).items : data,
+    }),
     meta,
   };
 

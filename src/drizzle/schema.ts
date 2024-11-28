@@ -9,7 +9,7 @@ import GenreModel from "../api/genres/genre.model";
 import LanguageModel from "../api/languages/language.model";
 import PublisherModel from "../api/publishers/publisher.model";
 import BookGenreModel from "../api/relations/book-genre.model";
-import UserProfileModel from "../api/user-profile/user-profile.model";
+import UserProfileModel from "../api/user-profile/user.profile.model";
 import UserModel, { enumRole } from "../api/users/user.model";
 
 export {

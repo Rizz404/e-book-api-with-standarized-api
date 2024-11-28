@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import UserModel from "../users/user.model";
@@ -14,5 +14,8 @@ const UserProfileModel = pgTable("user_profiles", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export type InsertUserProfileDTO = InferSelectModel<typeof UserProfileModel>;
+export type SelectUserProfileDTO = InferInsertModel<typeof UserProfileModel>;
 
 export default UserProfileModel;

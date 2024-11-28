@@ -16,8 +16,15 @@ import {
   findUserByIdService,
   findUsersByFiltersService,
   findUsersLikeColumnService,
+  updateUserPasswordService,
   updateUserService,
-} from "./user.service";
+} from "./user.services";
+import {
+  createUserProfileService,
+  findUserProfileByUserIdService,
+  updateUserProfileService,
+} from "../user-profile/user.profile.services";
+import { InsertUserProfileDTO } from "../user-profile/user.profile.model";
 
 // *==========*==========*==========POST==========*==========*==========*
 export const createUser: RequestHandler = async (req, res) => {
@@ -37,6 +44,10 @@ export const createUser: RequestHandler = async (req, res) => {
     }
 
     const newUser = await createUserService(userData);
+
+    if (newUser) {
+      await createUserProfileService(newUser.id);
+    }
 
     createSuccessResponse(res, newUser, "User created successfully", 201);
   } catch (error) {
@@ -120,69 +131,138 @@ export const getUsersLikeColumn: RequestHandler = async (req, res) => {
   }
 };
 
-export const getUser = (by: "req.params" | "req.user"): RequestHandler => {
-  return async (req, res) => {
-    try {
-      const userId = by === "req.params" ? req.params.userId : req.user?.id;
+export const getUserById: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
-      if (!userId) {
-        return createErrorResponse(
-          res,
-          "Something went wrong, id not found, you must login",
-          403,
-        );
-      }
+    const user = await findUserByIdService(userId);
 
-      const user = await findUserByIdService(userId);
-
-      if (!user) {
-        return createErrorResponse(res, "User not found", 404);
-      }
-
-      createSuccessResponse(res, user);
-    } catch (error) {
-      createErrorResponse(res, error);
+    if (!user) {
+      return createErrorResponse(res, "User not found", 404);
     }
-  };
+
+    createSuccessResponse(res, user);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const getCurrentUser: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return createErrorResponse(
+        res,
+        "Something went wrong, id not found",
+        403,
+      );
+    }
+
+    const user = await findUserByIdService(userId);
+
+    if (!user) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    createSuccessResponse(res, user);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
 };
 
 // *==========*==========*==========PATCH==========*==========*==========*
-export const updateUser = (by: "req.params" | "req.user"): RequestHandler => {
-  return async (req, res) => {
-    try {
-      const userData: Partial<InsertUserDTO> = req.body;
-      const userId = by === "req.params" ? req.params.userId : req.user?.id;
+export const updateUserById: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userData: Partial<InsertUserDTO> = req.body;
 
-      if (!userId) {
-        return createErrorResponse(
-          res,
-          "Something went wrong, id not found, you must login",
-          403,
-        );
-      }
+    const existingUser = await findUserByIdService(userId);
 
-      const existingUser = await findUserByIdService(userId);
-
-      if (!existingUser) {
-        return createErrorResponse(res, "User not found", 404);
-      }
-
-      const filteredData =
-        by === "req.user"
-          ? {
-              username: userData.username,
-              email: userData.email,
-              profilePicture: userData.profilePicture,
-            }
-          : userData;
-
-      const updatedUser = await updateUserService(userId, filteredData);
-
-      createSuccessResponse(res, updatedUser);
-    } catch (error) {
-      createErrorResponse(res, error);
+    if (!existingUser) {
+      return createErrorResponse(res, "User not found", 404);
     }
-  };
+
+    const updatedUser = await updateUserService(userId, userData);
+
+    createSuccessResponse(res, updatedUser);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const updateCurrentUser: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const {
+      username,
+      email,
+      profilePicture,
+      bio,
+    }: Partial<InsertUserDTO> & Partial<InsertUserProfileDTO> = req.body;
+
+    if (!userId) {
+      return createErrorResponse(
+        res,
+        "Something went wrong, id not found",
+        403,
+      );
+    }
+
+    const existingUser = await findUserByIdService(userId);
+
+    if (!existingUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    const updatedUser = await updateUserService(userId, {
+      username,
+      email,
+      profilePicture,
+    });
+
+    const existingUserProfile = await findUserProfileByUserIdService(userId);
+
+    if (!existingUserProfile) {
+      return createErrorResponse(res, "User profile not found", 404);
+    }
+
+    await updateUserProfileService(userId, { bio });
+
+    createSuccessResponse(res, updatedUser);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const updateCurrentUserPassword: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { storedPassword, newPassword } = req.body;
+
+    if (!userId) {
+      return createErrorResponse(
+        res,
+        "Something went wrong, id not found",
+        403,
+      );
+    }
+
+    if (!storedPassword || !newPassword) {
+      return createErrorResponse(
+        res,
+        "Both current and new passwords are required",
+        400,
+      );
+    }
+
+    // Update password melalui service
+    await updateUserPasswordService(userId, storedPassword, newPassword);
+
+    createSuccessResponse(res, undefined, "Password updated successfully");
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
 };
 
 // *==========*==========*==========DELETE==========*==========*==========*
