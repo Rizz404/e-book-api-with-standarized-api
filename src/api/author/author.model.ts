@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   date,
   pgTable,
@@ -29,5 +29,8 @@ const AuthorModel = pgTable(
   },
   (table) => [uniqueIndex().on(table.name)],
 );
+
+export type InsertAuthorDTO = InferInsertModel<typeof AuthorModel>;
+export type SelectAuthorDTO = InferSelectModel<typeof AuthorModel>;
 
 export default AuthorModel;

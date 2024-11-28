@@ -18,7 +18,7 @@ const UserModel = pgTable(
     username: varchar({ length: 50 }).notNull(),
     email: varchar({ length: 100 }).notNull(),
     password: varchar({ length: 255 }).notNull(),
-    role: enumRole().notNull().default("USER"),
+    role: enumRole().notNull().default("USER").notNull(),
     profilePicture: varchar("profile_picture", { length: 255 })
       .notNull()
       .default(

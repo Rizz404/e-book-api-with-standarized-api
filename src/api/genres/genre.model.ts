@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -21,5 +21,8 @@ const GenreModel = pgTable(
   },
   (table) => [uniqueIndex().on(table.name)],
 );
+
+export type InsertGenreDTO = InferSelectModel<typeof GenreModel>;
+export type SelectGenreDTO = InferInsertModel<typeof GenreModel>;
 
 export default GenreModel;
