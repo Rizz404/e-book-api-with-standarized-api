@@ -1,3 +1,4 @@
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import {
   date,
@@ -24,5 +25,8 @@ const PublisherModel = pgTable(
   },
   (table) => [uniqueIndex().on(table.name), uniqueIndex().on(table.email)],
 );
+
+export type InsertPublisherDTO = InferInsertModel<typeof PublisherModel>;
+export type SelectPublisherDTO = InferSelectModel<typeof PublisherModel>;
 
 export default PublisherModel;

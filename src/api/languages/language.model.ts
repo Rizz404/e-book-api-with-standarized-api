@@ -1,3 +1,4 @@
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { pgTable, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 const LanguageModel = pgTable(
@@ -9,5 +10,8 @@ const LanguageModel = pgTable(
   },
   (table) => [uniqueIndex().on(table.code), uniqueIndex().on(table.name)],
 );
+
+export type InsertLanguageDTO = InferInsertModel<typeof LanguageModel>;
+export type SelectLanguageDTO = InferSelectModel<typeof LanguageModel>;
 
 export default LanguageModel;

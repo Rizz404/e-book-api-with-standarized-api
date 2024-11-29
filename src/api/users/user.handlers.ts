@@ -8,6 +8,12 @@ import {
 } from "../../utils/api-response-util";
 import parsePagination from "../../utils/parse-pagination";
 import { addFilters } from "../../utils/query-utils";
+import { InsertUserProfileDTO } from "../user-profile/user.profile.model";
+import {
+  createUserProfileService,
+  findUserProfileByUserIdService,
+  updateUserProfileService,
+} from "../user-profile/user.profile.services";
 import UserModel, { InsertUserDTO, SelectUserDTO } from "./user.model";
 import {
   createUserService,
@@ -19,12 +25,6 @@ import {
   updateUserPasswordService,
   updateUserService,
 } from "./user.services";
-import {
-  createUserProfileService,
-  findUserProfileByUserIdService,
-  updateUserProfileService,
-} from "../user-profile/user.profile.services";
-import { InsertUserProfileDTO } from "../user-profile/user.profile.model";
 
 // *==========*==========*==========POST==========*==========*==========*
 export const createUser: RequestHandler = async (req, res) => {
@@ -227,9 +227,12 @@ export const updateCurrentUser: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "User profile not found", 404);
     }
 
-    await updateUserProfileService(userId, { bio });
+    const updatedUserProfile = await updateUserProfileService(userId, { bio });
 
-    createSuccessResponse(res, updatedUser);
+    createSuccessResponse(res, {
+      ...updatedUser,
+      userProfile: updatedUserProfile,
+    });
   } catch (error) {
     createErrorResponse(res, error);
   }

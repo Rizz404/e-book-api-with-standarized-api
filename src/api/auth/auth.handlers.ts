@@ -4,6 +4,7 @@ import {
   createErrorResponse,
   createSuccessResponse,
 } from "../../utils/api-response-util";
+import { createUserProfileService } from "../user-profile/user.profile.services";
 import UserModel, { InsertUserDTO, SelectUserDTO } from "../users/user.model";
 import {
   createUserService,
@@ -28,6 +29,10 @@ export const signUp: RequestHandler = async (req, res) => {
     }
 
     const newUser = await createUserService({ username, email, password });
+
+    if (newUser) {
+      await createUserProfileService(newUser.id);
+    }
 
     createSuccessResponse(res, newUser, "User sign up successfully", 201);
   } catch (error) {

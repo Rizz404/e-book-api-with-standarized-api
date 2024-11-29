@@ -22,13 +22,18 @@ export const updateUserProfileService = async (
   userProfileData: Partial<InsertUserProfileDTO>,
 ) => {
   const { bio } = userProfileData;
+  const updateData = {
+    ...(bio !== undefined && { bio }),
+  };
+
+  if (Object.keys(updateData).length === 0) {
+    return findUserProfileByUserIdService(userId);
+  }
 
   return (
     await db
       .update(UserProfileModel)
-      .set({
-        ...(bio !== undefined && { bio }),
-      })
+      .set(updateData)
       .where(eq(UserProfileModel.userId, userId))
       .returning()
   )[0];

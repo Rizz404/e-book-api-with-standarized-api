@@ -96,6 +96,7 @@ export const findUserByIdService = async (id: string, withPassword = false) => {
       .select({
         ...userResponse,
         ...(withPassword && { password: UserModel.password }),
+        userProfile: UserProfileModel,
       })
       .from(UserModel)
       .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
@@ -114,8 +115,10 @@ export const findUserByColumnService = async (
       .select({
         ...userResponse,
         ...(withPassword && { password: UserModel.password }),
+        userProfile: UserProfileModel,
       })
       .from(UserModel)
+      .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
       .where(or(eq(UserModel.username, username), eq(UserModel.email, email)))
       .limit(1)
   )[0];
@@ -126,17 +129,22 @@ export const updateUserService = async (
   userData: Partial<InsertUserDTO>,
 ) => {
   const { username, email, profilePicture, isVerified, role } = userData;
+  const updateData = {
+    ...(username !== undefined && { username }),
+    ...(email !== undefined && { email }),
+    ...(profilePicture !== undefined && { profilePicture }),
+    ...(isVerified !== undefined && { isVerified }),
+    ...(role !== undefined && { role }),
+  };
+
+  if (Object.keys(updateData).length === 0) {
+    return await findUserByIdService(userId);
+  }
 
   return (
     await db
       .update(UserModel)
-      .set({
-        ...(username !== undefined && { username }),
-        ...(email !== undefined && { email }),
-        ...(profilePicture !== undefined && { profilePicture }),
-        ...(isVerified !== undefined && { isVerified }),
-        ...(role !== undefined && { role }),
-      })
+      .set(updateData)
       .where(eq(UserModel.id, userId))
       .returning(userResponse)
   )[0];
