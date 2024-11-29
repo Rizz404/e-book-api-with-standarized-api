@@ -1,7 +1,7 @@
 import express from "express";
 
 import authRoutes from "./api/auth/auth.routes";
-import authorRoutes from "./api/author/author.routes";
+import authorRoutes from "./api/authors/author.routes";
 import genreRoutes from "./api/genres/genre.routes";
 import languageRoutes from "./api/languages/language.routes";
 import publisherRoutes from "./api/publishers/publisher.routes";

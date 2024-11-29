@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   date,
   decimal,
@@ -13,7 +13,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import AuthorModel from "../author/author.model";
+import AuthorModel from "../authors/author.model";
 import LanguageModel from "../languages/language.model";
 import PublisherModel from "../publishers/publisher.model";
 import UserModel from "../users/user.model";
@@ -55,7 +55,14 @@ const BookModel = pgTable(
       .default(sql`CURRENT_TIMESTAMP`),
   },
   // * Nama boleh ada yang sama tapi slugnya tidak, karena ditambah seller username
-  (table) => [index().on(table.title), uniqueIndex().on(table.slug)],
+  (table) => [
+    index().on(table.title),
+    uniqueIndex().on(table.slug),
+    uniqueIndex().on(table.isbn),
+  ],
 );
+
+export type InsertBookDTO = InferInsertModel<typeof BookModel>;
+export type SelectBookDTO = InferSelectModel<typeof BookModel>;
 
 export default BookModel;
