@@ -2,7 +2,6 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 
 import RATE_LIMITER_OPTION from "../../constants/limiter-constants";
-import { authMiddleware } from "../../middleware/auth-middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
 import { refreshExpiredToken, signIn, signUp } from "./auth.handlers";
 import { signInSchema, signUpSchema } from "./auth.validation";
@@ -21,10 +20,6 @@ router.post(
   schemaValidatorMiddleware(signInSchema),
   signIn,
 );
-router.post(
-  "/refresh-token",
-  authMiddleware({ authType: "required" }),
-  refreshExpiredToken,
-);
+router.post("/refresh-token", refreshExpiredToken);
 
 export default router;

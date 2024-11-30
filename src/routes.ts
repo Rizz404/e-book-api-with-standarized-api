@@ -1,6 +1,7 @@
 import express from "express";
 
 import authRoutes from "./api/auth/auth.routes";
+import authorFollowRoutes from "./api/author-follows/author.follow.routes";
 import authorRoutes from "./api/authors/author.routes";
 import bookRoutes from "./api/books/book.routes";
 import genreRoutes from "./api/genres/genre.routes";
@@ -17,5 +18,6 @@ router.use("/genres", genreRoutes);
 router.use("/languages", languageRoutes);
 router.use("/publishers", publisherRoutes);
 router.use("/books", bookRoutes);
+router.use("/author-follows", authorFollowRoutes);
 
 export default router;

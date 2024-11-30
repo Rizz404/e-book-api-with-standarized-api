@@ -72,23 +72,23 @@ export const getErrorMessage = (error: unknown) => {
 
 export const createPaginatedResponse = <T>(
   data: T[],
-  page: number,
-  limit: number,
+  currentPage: number,
+  itemsPerPage: number,
   totalItems: number,
 ): PaginatedData<T> => {
-  const totalPages = Math.ceil(totalItems / limit);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return {
     items: data,
     pagination: {
-      currentPage: page,
-      itemsPerPage: limit,
+      currentPage,
+      itemsPerPage,
       totalItems,
       totalPages,
-      previousPage: page > 1 ? page - 1 : null,
-      nextPage: page < totalPages ? page + 1 : null,
-      hasPreviousPage: page > 1,
-      hasNextPage: page < totalPages,
+      previousPage: currentPage > 1 ? currentPage - 1 : null,
+      nextPage: currentPage < totalPages ? currentPage + 1 : null,
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
     },
   };
 };
