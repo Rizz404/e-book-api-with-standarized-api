@@ -17,15 +17,15 @@ const router = express.Router();
 router
   .route("/")
   .post(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     // schemaValidatorMiddleware(createBookReviewSchema),
     createBookReview,
   )
-  .get(authMiddleware({ authType: "required" }), getBookReviews);
+  .get(authMiddleware(), getBookReviews);
 router
   .route("/:bookReviewId")
   .get(getBookReviewById)
-  .patch(authMiddleware({ authType: "required" }), updateBookReviewById)
-  .delete(authMiddleware({ authType: "required" }), deleteBookReviewById);
+  .patch(authMiddleware(), updateBookReviewById)
+  .delete(authMiddleware(), deleteBookReviewById);
 
 export default router;

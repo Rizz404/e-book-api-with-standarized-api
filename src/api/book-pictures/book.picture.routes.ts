@@ -13,13 +13,13 @@ import {
 const router = express.Router();
 
 router.route("/").post(
-  authMiddleware({ authType: "required" }),
+  authMiddleware(),
   // schemaValidatorMiddleware(createBookSchema),
   addBookPictures,
 );
 router
   .route("/:bookPictureId")
   .get(getBookPictureById)
-  .delete(authMiddleware({ authType: "required" }), deleteBookPictureById);
+  .delete(authMiddleware(), deleteBookPictureById);
 
 export default router;

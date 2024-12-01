@@ -18,23 +18,23 @@ const router = express.Router();
 router
   .route("/")
   .post(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     // schemaValidatorMiddleware(createLanguageSchema),
     createLanguage,
   )
-  .get(authMiddleware({ authType: "required" }), getLanguages);
+  .get(authMiddleware(), getLanguages);
 router.get("/search", getLanguagesLikeColumn);
 router
   .route("/:languageId")
   .get(getLanguageById)
   .patch(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     updateLanguageById,
   )
   .delete(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     deleteLanguageById,
   );

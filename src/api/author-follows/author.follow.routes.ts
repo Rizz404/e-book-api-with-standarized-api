@@ -12,12 +12,10 @@ import {
 
 const router = express.Router();
 
-router
-  .route("/")
-  .get(authMiddleware({ authType: "required" }), getAuthorsFollowed);
+router.route("/").get(authMiddleware(), getAuthorsFollowed);
 router
   .route("/:authorId")
-  .post(authMiddleware({ authType: "required" }), followAuthorByAuthorId)
-  .delete(authMiddleware({ authType: "required" }), unFollowAuthorByAuthorId);
+  .post(authMiddleware(), followAuthorByAuthorId)
+  .delete(authMiddleware(), unFollowAuthorByAuthorId);
 
 export default router;

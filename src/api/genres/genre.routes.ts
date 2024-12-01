@@ -18,23 +18,19 @@ const router = express.Router();
 router
   .route("/")
   .post(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     // schemaValidatorMiddleware(createGenreSchema),
     createGenre,
   )
-  .get(authMiddleware({ authType: "required" }), getGenres);
+  .get(authMiddleware(), getGenres);
 router.get("/search", getGenresLikeColumn);
 router
   .route("/:genreId")
   .get(getGenreById)
-  .patch(
-    authMiddleware({ authType: "required" }),
-    roleValidationMiddleware(["ADMIN"]),
-    updateGenreById,
-  )
+  .patch(authMiddleware(), roleValidationMiddleware(["ADMIN"]), updateGenreById)
   .delete(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     deleteGenreById,
   );

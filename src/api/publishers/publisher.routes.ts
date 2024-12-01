@@ -18,23 +18,23 @@ const router = express.Router();
 router
   .route("/")
   .post(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     // schemaValidatorMiddleware(createPublisherSchema),
     createPublisher,
   )
-  .get(authMiddleware({ authType: "required" }), getPublishers);
+  .get(authMiddleware(), getPublishers);
 router.get("/search", getPublishersLikeColumn);
 router
   .route("/:publisherId")
   .get(getPublisherById)
   .patch(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     updatePublisherById,
   )
   .delete(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     deletePublisherById,
   );

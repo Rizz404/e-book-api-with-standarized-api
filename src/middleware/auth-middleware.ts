@@ -19,11 +19,9 @@ declare global {
   }
 }
 
-export const authMiddleware = ({
-  authType = "required",
-}: {
-  authType?: "required" | "optional";
-}) => {
+export const authMiddleware = (
+  authType: "required" | "optional" = "required",
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const { authorization: authHeader } = req.headers;

@@ -12,21 +12,10 @@ import {
 
 const router = express.Router();
 
-router
-  .route("/")
-  .get(
-    authMiddleware({ authType: "required" }),
-    getUserPreferedLanguagesFollowed,
-  );
+router.route("/").get(authMiddleware(), getUserPreferedLanguagesFollowed);
 router
   .route("/:userId")
-  .post(
-    authMiddleware({ authType: "required" }),
-    addUserPreferedLanguageByLanguageId,
-  )
-  .delete(
-    authMiddleware({ authType: "required" }),
-    removeUserPreferedLanguageByLanguageId,
-  );
+  .post(authMiddleware(), addUserPreferedLanguageByLanguageId)
+  .delete(authMiddleware(), removeUserPreferedLanguageByLanguageId);
 
 export default router;

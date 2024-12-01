@@ -18,16 +18,16 @@ const router = express.Router();
 router
   .route("/")
   .post(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     // schemaValidatorMiddleware(createBookSchema),
     createBook,
   )
-  .get(authMiddleware({ authType: "required" }), getBooks);
+  .get(authMiddleware(), getBooks);
 router.get("/search", getBooksLikeColumn);
 router
   .route("/:bookId")
   .get(getBookById)
-  .patch(authMiddleware({ authType: "required" }), updateBookById)
-  .delete(authMiddleware({ authType: "required" }), deleteBookById);
+  .patch(authMiddleware(), updateBookById)
+  .delete(authMiddleware(), deleteBookById);
 
 export default router;

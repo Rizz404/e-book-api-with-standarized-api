@@ -21,28 +21,24 @@ const router = express.Router();
 router
   .route("/")
   .post(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     schemaValidatorMiddleware(createUserSchema),
     createUser,
   )
-  .get(authMiddleware({ authType: "required" }), getUsers);
+  .get(authMiddleware(), getUsers);
 router
   .route("/profile")
-  .get(authMiddleware({ authType: "required" }), getCurrentUser)
-  .patch(authMiddleware({ authType: "required" }), updateCurrentUser);
+  .get(authMiddleware(), getCurrentUser)
+  .patch(authMiddleware(), updateCurrentUser);
 router.get("/search", getUsersLikeColumn);
 router.patch("/update-password", updateCurrentUserPassword);
 router
   .route("/:userId")
   .get(getUserById)
-  .patch(
-    authMiddleware({ authType: "required" }),
-    roleValidationMiddleware(["ADMIN"]),
-    updateUserById,
-  )
+  .patch(authMiddleware(), roleValidationMiddleware(["ADMIN"]), updateUserById)
   .delete(
-    authMiddleware({ authType: "required" }),
+    authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     deleteUserById,
   );
