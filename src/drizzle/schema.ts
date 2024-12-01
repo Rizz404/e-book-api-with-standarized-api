@@ -20,7 +20,7 @@ import ShippingServiceModel from "../api/shipping-services/shipping.service.mode
 import TransactionModel, {
   enumPaymentStatus,
 } from "../api/transactions/transaction.model";
-import UserAddressModel from "../api/user-addresses/user.profile.model";
+import UserAddressModel from "../api/user-addresses/user.address.model";
 import UserFollowModel from "../api/user-follows/user.follow.model";
 import UserPreferedLanguageModel from "../api/user-prefered-languages/user.prefered.language.model";
 import UserProfileModel from "../api/user-profile/user.profile.model";

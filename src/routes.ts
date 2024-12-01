@@ -15,6 +15,7 @@ import paymentMethodRoutes from "./api/payment-methods/payment.method.routes";
 import publisherFollowRoutes from "./api/publisher-follows/publisher.follow.routes";
 import publisherRoutes from "./api/publishers/publisher.routes";
 import shippingServiceRoutes from "./api/shipping-services/shipping.service.routes";
+import userAddressRoutes from "./api/user-addresses/user.address.routes";
 import userFollowRoutes from "./api/user-follows/user.follow.routes";
 import userPreferedLanguageRoutes from "./api/user-prefered-languages/user.prefered.language.routes";
 import userRoutes from "./api/users/user.routes";
@@ -39,5 +40,6 @@ router.use("/user-follows", userFollowRoutes);
 router.use("/user-prefered-languages", userPreferedLanguageRoutes);
 router.use("/payment-methods", paymentMethodRoutes);
 router.use("/shipping-services", shippingServiceRoutes);
+router.use("/user-addresses", userAddressRoutes);
 
 export default router;
