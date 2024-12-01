@@ -7,7 +7,7 @@ import BookPictureModel from "../api/book-pictures/book.picture.model";
 import BookReviewModel from "../api/book-reviews/book.review.model";
 import BookModel, { enumBookStatus } from "../api/books/book.model";
 import CartModel from "../api/cart/cart.model";
-import CartItemModel from "../api/cart-item/cart.item.model";
+import CartItemModel from "../api/cart-items/cart.item.model";
 import GenreFollowModel from "../api/genre-follows/genre.follow.model";
 import GenreModel from "../api/genres/genre.model";
 import LanguageModel from "../api/languages/language.model";

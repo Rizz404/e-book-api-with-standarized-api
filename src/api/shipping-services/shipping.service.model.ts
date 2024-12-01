@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   decimal,
   pgTable,
@@ -19,5 +19,12 @@ const ShippingServiceModel = pgTable("shipping_services", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export type InsertShippingServiceDTO = InferInsertModel<
+  typeof ShippingServiceModel
+>;
+export type SelectShippingServiceDTO = InferSelectModel<
+  typeof ShippingServiceModel
+>;
 
 export default ShippingServiceModel;

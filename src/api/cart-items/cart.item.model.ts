@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import { decimal, integer, timestamp, uuid } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core";
 
@@ -21,5 +21,8 @@ const CartItemModel = pgTable("cart_items", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export type InsertCartItemDTO = InferInsertModel<typeof CartItemModel>;
+export type SelectCartItemDTO = InferSelectModel<typeof CartItemModel>;
 
 export default CartItemModel;
