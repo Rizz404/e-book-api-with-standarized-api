@@ -11,6 +11,7 @@ import morgan from "morgan";
 
 import { pool } from "./config/database-config";
 import limiter from "./config/limiter-config";
+import apiKeyMiddleware from "./middleware/api-key-middleware";
 import routes from "./routes";
 import logger from "./utils/logger";
 
@@ -30,6 +31,7 @@ app.use(bodyParser.json({ limit: "30mb" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // * Routes
+app.use(apiKeyMiddleware);
 app.use("/api", routes);
 
 app.use(limiter); // * Rate limiting setelah routing
