@@ -11,7 +11,7 @@ import CartItemModel from "../api/cart-item/cart.item.model";
 import GenreFollowModel from "../api/genre-follows/genre.follow.model";
 import GenreModel from "../api/genres/genre.model";
 import LanguageModel from "../api/languages/language.model";
-import OrderModel from "../api/orders/order.model";
+import OrderModel, { enumShippingStatus } from "../api/orders/order.model";
 import PaymentMethodModel from "../api/payment-methods/payment.method.model";
 import PublisherFollowModel from "../api/publisher-follows/publisher.follow.model";
 import PublisherModel from "../api/publishers/publisher.model";
@@ -38,6 +38,7 @@ export {
   enumBookStatus,
   enumPaymentStatus,
   enumRole,
+  enumShippingStatus,
   GenreFollowModel,
   GenreModel,
   LanguageModel,

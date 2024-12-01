@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { decimal, pgEnum, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  decimal,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import UserModel from "../users/user.model";
 
@@ -42,6 +49,7 @@ const TransactionModel = pgTable("transactions", {
   })
     .notNull()
     .default("0.00"),
+  paymentReference: text("payment_reference"), // * Mungkin nanti tambahin providernya sebagai table
   status: enumPaymentStatus().default("PENDING"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")

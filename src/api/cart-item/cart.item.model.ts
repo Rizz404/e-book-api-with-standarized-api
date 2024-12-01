@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, timestamp, uuid } from "drizzle-orm/pg-core";
+import { decimal, integer, timestamp, uuid } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core";
 
 import BookModel from "../books/book.model";
@@ -12,6 +12,8 @@ const CartItemModel = pgTable("cart_items", {
     .notNull(),
   bookId: uuid("book_id")
     .references(() => BookModel.id)
+    .notNull(),
+  priceAtCart: decimal("price_at_cart", { precision: 10, scale: 2 }) // Harga buku saat ditambahkan ke keranjang
     .notNull(),
   quantity: integer().notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),

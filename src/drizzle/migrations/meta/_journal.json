@@ -22,6 +22,13 @@
       "when": 1732885028991,
       "tag": "0002_add_more_table",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1733047757465,
+      "tag": "0003_add_more_column_and_add_enum",
+      "breakpoints": true
     }
   ]
 }
