@@ -1,3 +1,4 @@
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { pgTable, primaryKey, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import UserModel from "../users/user.model";
@@ -16,5 +17,8 @@ const UserFollowModel = pgTable(
     primaryKey({ columns: [table.followedUserId, table.followingUserId] }),
   ],
 );
+
+export type InsertUserFollowDTO = InferInsertModel<typeof UserFollowModel>;
+export type SelectUserFollowDTO = InferSelectModel<typeof UserFollowModel>;
 
 export default UserFollowModel;

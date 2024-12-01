@@ -22,7 +22,7 @@ import TransactionModel, {
 } from "../api/transactions/transaction.model";
 import UserAddressModel from "../api/user-addresses/user.profile.model";
 import UserFollowModel from "../api/user-follows/user.follow.model";
-import UserPreferedLanguageModel from "../api/user-prefered-languages/user-prefered-language.model";
+import UserPreferedLanguageModel from "../api/user-prefered-languages/user.prefered.language.model";
 import UserProfileModel from "../api/user-profile/user.profile.model";
 import UserModel, { enumRole } from "../api/users/user.model";
 
