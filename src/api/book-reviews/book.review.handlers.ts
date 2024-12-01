@@ -8,19 +8,21 @@ import {
 } from "../../utils/api-response-util";
 import parsePagination from "../../utils/parse-pagination";
 import { addFilters } from "../../utils/query-utils";
-import BookModel, { InsertBookDTO, SelectBookDTO } from "./book.model";
+import BookReviewModel, {
+  InsertBookReviewDTO,
+  SelectBookReviewDTO,
+} from "./book.review.model";
 import {
-  createBookService,
-  deleteBookService,
-  findBookByColumnService,
-  findBookByIdService,
-  findBooksByFiltersService,
-  findBooksLikeColumnService,
-  updateBookService,
-} from "./book.services";
+  createBookReviewService,
+  deleteBookReviewService,
+  findBookReviewByColumnService,
+  findBookReviewByIdService,
+  findBookReviewsByFiltersService,
+  updateBookReviewService,
+} from "./book.review.services";
 
 // *==========*==========*==========POST==========*==========*==========*
-export const createBook: RequestHandler = async (req, res) => {
+export const createBookReview: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
 
@@ -32,30 +34,32 @@ export const createBook: RequestHandler = async (req, res) => {
       );
     }
 
-    const bookData: InsertBookDTO = req.body;
+    const bookReviewData: InsertBookReviewDTO = req.body;
 
-    const book = await findBookByColumnService("slug", bookData.slug);
+    const newBookReview = await createBookReviewService({
+      ...bookReviewData,
+      userId,
+    });
 
-    if (book) {
-      return createErrorResponse(res, "Book already exist", 400);
-    }
-
-    const newBook = await createBookService({ ...bookData, sellerId: userId });
-
-    createSuccessResponse(res, newBook, "Book created successfully", 201);
+    createSuccessResponse(
+      res,
+      newBookReview,
+      "BookReview created successfully",
+      201,
+    );
   } catch (error) {
     createErrorResponse(res, error);
   }
 };
 
 // *==========*==========*==========GET==========*==========*==========*
-export const getBooks: RequestHandler = async (req, res) => {
+export const getBookReviews: RequestHandler = async (req, res) => {
   try {
     const {
       page = "1",
       limit = "10",
-      status,
-    } = req.query as unknown as Partial<SelectBookDTO> & {
+      rating,
+    } = req.query as unknown as Partial<SelectBookReviewDTO> & {
       page?: string;
       limit?: string;
     };
@@ -64,11 +68,11 @@ export const getBooks: RequestHandler = async (req, res) => {
     const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
 
     // * Filter
-    const filters = addFilters(BookModel, [
-      status ? (table) => eq(table.status, status) : undefined,
+    const filters = addFilters(BookReviewModel, [
+      rating ? (table) => eq(table.rating, rating) : undefined,
     ]);
 
-    const { books, totalItems } = await findBooksByFiltersService(
+    const { bookReviews, totalItems } = await findBookReviewsByFiltersService(
       limit,
       offset,
       filters,
@@ -76,68 +80,36 @@ export const getBooks: RequestHandler = async (req, res) => {
 
     createSuccessResponse(
       res,
-      createPaginatedResponse(books, currentPage, itemsPerPage, totalItems),
+      createPaginatedResponse(
+        bookReviews,
+        currentPage,
+        itemsPerPage,
+        totalItems,
+      ),
     );
   } catch (error) {
     createErrorResponse(res, error);
   }
 };
 
-export const getBooksLikeColumn: RequestHandler = async (req, res) => {
+export const getBookReviewById: RequestHandler = async (req, res) => {
   try {
-    const {
-      page = "1",
-      limit = "10",
-      title = "",
-      slug = "",
-    } = req.query as unknown as Partial<SelectBookDTO> & {
-      page?: string;
-      limit?: string;
-    };
+    const { bookReviewId } = req.params;
 
-    if (title && slug) {
-      return createErrorResponse(
-        res,
-        "You can only filter by either title or slug, not both.",
-        400, // Bad Request
-      );
+    const bookReview = await findBookReviewByIdService(bookReviewId);
+
+    if (!bookReview) {
+      return createErrorResponse(res, "BookReview not found", 404);
     }
 
-    const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
-    const { books, totalItems } = await findBooksLikeColumnService(
-      limit,
-      offset,
-      title ? BookModel.title : BookModel.slug,
-      title || slug,
-    );
-
-    createSuccessResponse(
-      res,
-      createPaginatedResponse(books, currentPage, itemsPerPage, totalItems),
-    );
-  } catch (error) {
-    createErrorResponse(res, error);
-  }
-};
-
-export const getBookById: RequestHandler = async (req, res) => {
-  try {
-    const { bookId } = req.params;
-
-    const book = await findBookByIdService(bookId);
-
-    if (!book) {
-      return createErrorResponse(res, "Book not found", 404);
-    }
-
-    createSuccessResponse(res, book);
+    createSuccessResponse(res, bookReview);
   } catch (error) {
     createErrorResponse(res, error);
   }
 };
 
 // *==========*==========*==========PATCH==========*==========*==========*
-export const updateBookById: RequestHandler = async (req, res) => {
+export const updateBookReviewById: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
     const role = req.user?.role;
@@ -150,37 +122,37 @@ export const updateBookById: RequestHandler = async (req, res) => {
       );
     }
 
-    const { bookId } = req.params;
-    const bookData: Partial<InsertBookDTO> = req.body;
+    const { bookReviewId } = req.params;
+    const bookReviewData: Partial<InsertBookReviewDTO> = req.body;
 
-    const existingBook = await findBookByIdService(bookId);
+    const existingBookReview = await findBookReviewByIdService(bookReviewId);
 
-    console.log(`userId: ${userId}`);
-    console.log(`sellerId: ${existingBook.sellerId}`);
-    console.log(`role: ${role}`);
-
-    if (!existingBook) {
-      return createErrorResponse(res, "Book not found", 404);
+    if (!existingBookReview) {
+      return createErrorResponse(res, "BookReview not found", 404);
     }
 
-    if (existingBook.sellerId !== userId && role !== "ADMIN") {
+    if (existingBookReview.book_reviews.userId !== userId && role !== "ADMIN") {
       return createErrorResponse(
         res,
-        "You don't have permission to update this book",
+        "You don't have permission to update this bookReview",
         404,
       );
     }
 
-    const updatedBook = await updateBookService(bookId, userId, bookData);
+    const updatedBookReview = await updateBookReviewService(
+      bookReviewId,
+      userId,
+      bookReviewData,
+    );
 
-    createSuccessResponse(res, updatedBook);
+    createSuccessResponse(res, updatedBookReview);
   } catch (error) {
     createErrorResponse(res, error);
   }
 };
 
 // *==========*==========*==========DELETE==========*==========*==========*
-export const deleteBookById: RequestHandler = async (req, res) => {
+export const deleteBookReviewById: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
     const role = req.user?.role;
@@ -193,28 +165,28 @@ export const deleteBookById: RequestHandler = async (req, res) => {
       );
     }
 
-    const { bookId } = req.params;
+    const { bookReviewId } = req.params;
 
-    const existingBook = await findBookByIdService(bookId);
+    const existingBookReview = await findBookReviewByIdService(bookReviewId);
 
-    if (!existingBook) {
-      return createErrorResponse(res, "Book not found", 404);
+    if (!existingBookReview) {
+      return createErrorResponse(res, "BookReview not found", 404);
     }
 
-    if (existingBook.sellerId !== userId && role !== "ADMIN") {
+    if (existingBookReview.book_reviews.userId !== userId && role !== "ADMIN") {
       return createErrorResponse(
         res,
-        "You don't have permission to delete this book",
+        "You don't have permission to delete this bookReview",
         404,
       );
     }
 
-    const deletedBook = await deleteBookService(bookId);
+    const deletedBookReview = await deleteBookReviewService(bookReviewId);
 
-    if (!deletedBook) {
+    if (!deletedBookReview) {
       return createErrorResponse(
         res,
-        "Something cause book not deleted properly",
+        "Something cause bookReview not deleted properly",
         400,
       );
     }
@@ -222,7 +194,7 @@ export const deleteBookById: RequestHandler = async (req, res) => {
     createSuccessResponse(
       res,
       undefined,
-      `Successfully deleted book with id ${deletedBook.id}`,
+      `Successfully deleted bookReview with id ${deletedBookReview.id}`,
     );
   } catch (error) {
     createErrorResponse(res, error);

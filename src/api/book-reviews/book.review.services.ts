@@ -11,201 +11,102 @@ import {
 } from "drizzle-orm";
 
 import db from "../../config/database-config";
-import AuthorModel from "../authors/author.model";
-import BookModel, { InsertBookDTO, SelectBookDTO } from "../books/book.model";
-import LanguageModel from "../languages/language.model";
-import PublisherModel from "../publishers/publisher.model";
+import BookModel from "../books/book.model";
 import UserModel from "../users/user.model";
-import { findUserByIdService } from "../users/user.services";
+import BookReviewModel, {
+  InsertBookReviewDTO,
+  SelectBookReviewDTO,
+} from "./book.review.model";
 
-export const bookResponse = {
-  id: BookModel.id,
-  authorId: BookModel.authorId,
-  sellerId: BookModel.sellerId,
-  description: BookModel.description,
-  publisherId: BookModel.publisherId,
-  languageId: BookModel.languageId,
-  title: BookModel.title,
-  publicationDate: BookModel.publicationDate,
-  slug: BookModel.slug,
-  isbn: BookModel.isbn,
-  fileUrl: BookModel.fileUrl,
-  status: BookModel.status,
-  author: {
-    id: AuthorModel.id,
-    name: AuthorModel.name,
-  },
-  seller: {
-    id: UserModel.id,
-    username: UserModel.username,
-    email: UserModel.email,
-    isVerified: UserModel.isVerified,
-    profilePicture: UserModel.profilePicture,
-  },
-  publisher: {
-    id: PublisherModel.id,
-    name: PublisherModel.name,
-    email: PublisherModel.email,
-    website: PublisherModel.website,
-  },
-  language: LanguageModel.name,
-};
-
-export const createBookService = async (bookData: InsertBookDTO) => {
-  const { title, sellerId } = bookData;
-
-  const seller = await findUserByIdService(sellerId);
-  const generatedSlug = `seller_${seller.username}_${title.split(" ").join("_")}`;
-
+export const createBookReviewService = async (
+  bookReviewData: InsertBookReviewDTO,
+) => {
   return (
-    await db
-      .insert(BookModel)
-      .values({ ...bookData, slug: generatedSlug, isbn: faker.commerce.isbn() })
-      .returning()
+    await db.insert(BookReviewModel).values(bookReviewData).returning()
   )[0];
 };
 
-export const findBooksByFiltersService = async (
+export const findBookReviewsByFiltersService = async (
   limit: string,
   offset: number,
   filters?: SQL<unknown>,
 ) => {
   const totalItems =
-    (await db.select({ count: count() }).from(BookModel).where(filters))[0]
-      .count || 0;
-  const books = await db
-    .select(bookResponse)
-    .from(BookModel)
-    .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
-    .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
-    .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
-    .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
-    .where(filters)
-    .orderBy(desc(BookModel.createdAt))
-    .limit(parseInt(limit))
-    .offset(offset);
-
-  return { totalItems, books };
-};
-
-export const findBooksLikeColumnService = async (
-  limit: string,
-  offset: number,
-  column: Column,
-  value: string | SQLWrapper,
-) => {
-  const totalItems =
     (
-      await db
-        .select({ count: count() })
-        .from(BookModel)
-        .where(ilike(column, `%${value}%`))
+      await db.select({ count: count() }).from(BookReviewModel).where(filters)
     )[0].count || 0;
-  const books = await db
-    .select(bookResponse)
-    .from(BookModel)
-    .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
-    .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
-    .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
-    .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
-    .where(ilike(column, `%${value}%`))
-    .orderBy(desc(BookModel.createdAt))
+  const bookReviews = await db
+    .select()
+    .from(BookReviewModel)
+    .leftJoin(UserModel, eq(BookReviewModel.userId, UserModel.id))
+    .leftJoin(BookModel, eq(BookReviewModel.bookId, BookModel.id))
+    .where(filters)
+    .orderBy(desc(BookReviewModel.createdAt))
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems, books };
+  return { totalItems, bookReviews };
 };
 
-export const findBookByIdService = async (id: string) => {
+export const findBookReviewByIdService = async (id: string) => {
   return (
     await db
-      .select(bookResponse)
-      .from(BookModel)
-      .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
-      .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
-      .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
-      .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
-      .where(eq(BookModel.id, id))
+      .select()
+      .from(BookReviewModel)
+      .leftJoin(UserModel, eq(BookReviewModel.userId, UserModel.id))
+      .leftJoin(BookModel, eq(BookReviewModel.bookId, BookModel.id))
+      .where(eq(BookReviewModel.id, id))
       .limit(1)
   )[0];
 };
 
-export const findBookByColumnService = async <
-  Column extends keyof SelectBookDTO,
+export const findBookReviewByColumnService = async <
+  Column extends keyof SelectBookReviewDTO,
 >(
   column: Column,
-  value: SelectBookDTO[Column], // Tipe data sesuai kolom
+  value: SelectBookReviewDTO[Column], // Tipe data sesuai kolom
 ) => {
   return (
     await db
-      .select(bookResponse)
-      .from(BookModel)
-      .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
-      .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
-      .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
-      .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
-      .where(eq(BookModel[column], value!))
+      .select()
+      .from(BookReviewModel)
+      .leftJoin(UserModel, eq(BookReviewModel.userId, UserModel.id))
+      .leftJoin(BookModel, eq(BookReviewModel.bookId, BookModel.id))
+      .where(eq(BookReviewModel[column], value!))
       .limit(1)
   )[0];
 };
 
-export const updateBookService = async (
-  bookId: string,
-  sellerId: string,
-  bookData: Partial<InsertBookDTO>,
+export const updateBookReviewService = async (
+  bookReviewId: string,
+  userId: string,
+  bookReviewData: Partial<InsertBookReviewDTO>,
 ) => {
-  const {
-    title,
-    authorId,
-    publisherId,
-    languageId,
-    description,
-    publicationDate,
-    isbn,
-    price,
-    stock,
-    status,
-    fileUrl,
-  } = bookData;
-  let newSlug: string | undefined;
-
-  if (title) {
-    const seller = await findUserByIdService(sellerId);
-    const generatedSlug = `seller_${seller.username}_${title.split(" ").join("_")}`;
-
-    newSlug = generatedSlug;
-  }
+  const { comment, rating } = bookReviewData;
 
   const updateData = {
-    ...(title !== undefined && { title }),
-    ...(authorId !== undefined && { authorId }),
-    ...(publisherId !== undefined && { publisherId }),
-    ...(languageId !== undefined && { languageId }),
-    ...(description !== undefined && { description }),
-    ...(publicationDate !== undefined && { publicationDate }),
-    ...(title !== undefined && { slug: newSlug }),
-    ...(isbn !== undefined && { isbn }),
-    ...(price !== undefined && { price }),
-    ...(stock !== undefined && { stock }),
-    ...(status !== undefined && { status }),
-    ...(fileUrl !== undefined && { fileUrl }),
+    ...(comment !== undefined && { comment }),
+    ...(rating !== undefined && { rating }),
   };
 
   if (Object.keys(updateData).length === 0) {
-    return await findBookByIdService(bookId);
+    return await findBookReviewByIdService(bookReviewId);
   }
 
   return (
     await db
-      .update(BookModel)
+      .update(BookReviewModel)
       .set(updateData)
-      .where(eq(BookModel.id, bookId))
+      .where(eq(BookReviewModel.id, bookReviewId))
       .returning()
   )[0];
 };
 
-export const deleteBookService = async (bookId: string) => {
+export const deleteBookReviewService = async (bookReviewId: string) => {
   return (
-    await db.delete(BookModel).where(eq(BookModel.id, bookId)).returning()
+    await db
+      .delete(BookReviewModel)
+      .where(eq(BookReviewModel.id, bookReviewId))
+      .returning()
   )[0];
 };

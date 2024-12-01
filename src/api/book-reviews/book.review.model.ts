@@ -1,4 +1,5 @@
-import { sql } from "drizzle-orm";
+import { InferSelectModel, sql } from "drizzle-orm";
+import { InferInsertModel } from "drizzle-orm";
 import { pgTable, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import BookModel from "../books/book.model";
@@ -19,5 +20,8 @@ const BookReviewModel = pgTable("book_reviews", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export type InsertBookReviewDTO = InferInsertModel<typeof BookReviewModel>;
+export type SelectBookReviewDTO = InferSelectModel<typeof BookReviewModel>;
 
 export default BookReviewModel;
