@@ -4,7 +4,7 @@
 import AuthorFollowModel from "../api/author-follows/author.follow.model";
 import AuthorModel from "../api/authors/author.model";
 import BookPictureModel from "../api/book-pictures/book.picture.model";
-import BookReviewModel from "../api/book-reviews/book-review.model";
+import BookReviewModel from "../api/book-reviews/book.review.model";
 import BookModel, { enumBookStatus } from "../api/books/book.model";
 import CartModel from "../api/cart/cart.model";
 import CartItemModel from "../api/cart-item/cart.item.model";
@@ -13,7 +13,7 @@ import GenreModel from "../api/genres/genre.model";
 import LanguageModel from "../api/languages/language.model";
 import OrderModel from "../api/orders/order.model";
 import PaymentMethodModel from "../api/payment-methods/payment.method.model";
-import PublisherFollowModel from "../api/publisher-follow/publisher.follow.model";
+import PublisherFollowModel from "../api/publisher-follows/publisher.follow.model";
 import PublisherModel from "../api/publishers/publisher.model";
 import BookGenreModel from "../api/relations/book-genre.model";
 import ShippingServiceModel from "../api/shipping-services/shipping.service.model";
