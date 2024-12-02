@@ -8,11 +8,13 @@ import express from "express";
 import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
 
 import { pool } from "./config/database-config";
 import limiter from "./config/limiter-config";
 import apiKeyMiddleware from "./middleware/api-key-middleware";
 import routes from "./routes";
+import swaggerOutput from "./swagger_output.json";
 import logger from "./utils/logger";
 
 // * INIT
@@ -31,8 +33,9 @@ app.use(bodyParser.json({ limit: "30mb" }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // * Routes
-app.use(apiKeyMiddleware);
+// app.use(apiKeyMiddleware);
 app.use("/api", routes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 
 app.use(limiter); // * Rate limiting setelah routing
 
