@@ -21,6 +21,7 @@ export const userResponse = {
   role: UserModel.role,
   profilePicture: UserModel.profilePicture,
   isVerified: UserModel.isVerified,
+  isEmailVerified: UserModel.isEmailVerified,
   createdAt: UserModel.createdAt,
   updatedAt: UserModel.updatedAt,
 };
@@ -105,7 +106,7 @@ export const findUserByIdService = async (id: string, withPassword = false) => {
   )[0];
 };
 
-export const findUserByColumnService = async (
+export const findUserByUsernameOrEmailService = async (
   username: string,
   email: string,
   withPassword = false,
@@ -124,16 +125,34 @@ export const findUserByColumnService = async (
   )[0];
 };
 
+export const findUserByColumnService = async <
+  Column extends keyof SelectUserDTO,
+>(
+  column: Column,
+  value: SelectUserDTO[Column],
+) => {
+  return (
+    await db
+      .select(userResponse)
+      .from(UserModel)
+      .leftJoin(UserProfileModel, eq(UserModel.id, UserProfileModel.userId))
+      .where(eq(UserModel[column], value!))
+      .limit(1)
+  )[0];
+};
+
 export const updateUserService = async (
   userId: string,
   userData: Partial<InsertUserDTO>,
 ) => {
-  const { username, email, profilePicture, isVerified, role } = userData;
+  const { username, email, profilePicture, isVerified, role, isEmailVerified } =
+    userData;
   const updateData = {
     ...(username !== undefined && { username }),
     ...(email !== undefined && { email }),
     ...(profilePicture !== undefined && { profilePicture }),
     ...(isVerified !== undefined && { isVerified }),
+    ...(isEmailVerified !== undefined && { isEmailVerified }),
     ...(role !== undefined && { role }),
   };
 

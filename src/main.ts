@@ -34,8 +34,8 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // * Routes
 // app.use(apiKeyMiddleware);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use("/api", routes);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 
 app.use(limiter); // * Rate limiting setelah routing
 

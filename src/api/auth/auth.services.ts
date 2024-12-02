@@ -26,8 +26,33 @@ export const generateRefreshToken = (userId: string) => {
   });
 };
 
+export const generateEmailConfirmationToken = (
+  userId: string,
+  email: string,
+) => {
+  return jwt.sign(
+    { userId, email },
+    process.env.JWT_EMAIL_CONFIRMATION_TOKEN as string,
+    {
+      expiresIn: "7h",
+    },
+  );
+};
+
 export const decodeRefreshToken = (refreshToken: string) => {
   return jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN as string) as {
     userId: string;
+  };
+};
+
+export const decodeEmailConfirmationToken = (
+  emailConfirmationToken: string,
+) => {
+  return jwt.verify(
+    emailConfirmationToken,
+    process.env.JWT_EMAIL_CONFIRMATION_TOKEN as string,
+  ) as {
+    userId: string;
+    email: string;
   };
 };

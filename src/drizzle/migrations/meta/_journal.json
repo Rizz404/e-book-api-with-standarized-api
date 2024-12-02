@@ -29,6 +29,13 @@
       "when": 1733047757465,
       "tag": "0003_add_more_column_and_add_enum",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1733114461712,
+      "tag": "0004_add_is_email_verified_to_user",
+      "breakpoints": true
     }
   ]
 }

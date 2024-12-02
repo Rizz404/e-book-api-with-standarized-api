@@ -24,7 +24,8 @@ const UserModel = pgTable(
       .default(
         "https://i.pinimg.com/474x/fe/64/11/fe64116a7f610dbee15e840629fc7e67.jpg",
       ),
-    isVerified: boolean().default(false).notNull(),
+    isVerified: boolean("is_verified").default(false).notNull(),
+    isEmailVerified: boolean("is_email_verified").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

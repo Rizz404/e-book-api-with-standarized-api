@@ -20,6 +20,7 @@ import {
   deleteUserService,
   findUserByColumnService,
   findUserByIdService,
+  findUserByUsernameOrEmailService,
   findUsersByFiltersService,
   findUsersLikeColumnService,
   updateUserPasswordService,
@@ -34,7 +35,7 @@ export const createUser: RequestHandler = async (req, res) => {
       "username" | "email" | "password" | "role" | "profilePicture"
     > = req.body;
 
-    const user = await findUserByColumnService(
+    const user = await findUserByUsernameOrEmailService(
       userData.username,
       userData.email,
     );
