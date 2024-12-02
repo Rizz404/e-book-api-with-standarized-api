@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   decimal,
   pgEnum,
@@ -64,5 +64,8 @@ const TransactionModel = pgTable("transactions", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export type InsertTransactionDTO = InferInsertModel<typeof TransactionModel>;
+export type SelectTransactionDTO = InferSelectModel<typeof TransactionModel>;
 
 export default TransactionModel;

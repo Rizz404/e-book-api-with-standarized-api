@@ -4,6 +4,7 @@ import { authMiddleware } from "../../middleware/auth-middleware";
 import roleValidationMiddleware from "../../middleware/role-validation-middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
 import {
+  cartCheckout,
   createCart,
   deleteCartById,
   getCartById,
@@ -21,6 +22,7 @@ router
     createCart,
   )
   .get(authMiddleware(), getCarts);
+router.post("/checkout", authMiddleware(), cartCheckout);
 router
   .route("/:cartId")
   .get(getCartById)
