@@ -7,8 +7,10 @@ import {
   createSuccessResponse,
 } from "../../utils/api-response-util";
 import parsePagination from "../../utils/parse-pagination";
+import { SelectCartItemDTO } from "../cart-items/cart.item.model";
 import { InsertCartDTO, SelectCartDTO } from "./cart.model";
 import {
+  cartCheckoutService,
   createCartService,
   deleteCartService,
   findCartByColumnService,
@@ -39,6 +41,33 @@ export const createCart: RequestHandler = async (req, res) => {
     const newCart = await createCartService({ ...cartData, userId });
 
     createSuccessResponse(res, newCart, "Cart created successfully", 201);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const cartCheckout: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const cartData: (SelectCartItemDTO & { shippingServiceId: string })[] & {
+      paymentMethodId: string;
+    } = req.body;
+
+    if (!userId) {
+      return createErrorResponse(
+        res,
+        "Something went wrong, id not found",
+        403,
+      );
+    }
+
+    const newCart = await cartCheckoutService(
+      userId,
+      cartData,
+      cartData.paymentMethodId,
+    );
+
+    createSuccessResponse(res, newCart, "Cart checkout successfully", 201);
   } catch (error) {
     createErrorResponse(res, error);
   }
