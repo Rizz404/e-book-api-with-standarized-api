@@ -23,32 +23,40 @@ const TransactionModel = pgTable("transactions", {
     .notNull(),
   adminFee: decimal("admin_fee", { precision: 10, scale: 2 })
     .notNull()
-    .default("0.00"),
+    .default("0.00")
+    .$type<number>(),
   totalShippingServicesFee: decimal("total_shipping_services_fee", {
     precision: 10,
     scale: 2,
   })
     .notNull()
-    .default("0.00"),
+    .default("0.00")
+    .$type<number>(),
   paymentMethodFee: decimal("payment_method_fee", {
     precision: 10,
     scale: 2,
   })
     .notNull()
-    .default("0.00"),
-  discount: decimal({ precision: 10, scale: 2 }).notNull().default("0.00"),
+    .default("0.00")
+    .$type<number>(),
+  discount: decimal({ precision: 10, scale: 2 })
+    .notNull()
+    .default("0.00")
+    .$type<number>(),
   subtotalPrice: decimal("subtotal_price", {
     precision: 10,
     scale: 2,
   })
     .notNull()
-    .default("0.00"),
+    .default("0.00")
+    .$type<number>(),
   totalPrice: decimal("total_price", {
     precision: 10,
     scale: 2,
   })
     .notNull()
-    .default("0.00"),
+    .default("0.00")
+    .$type<number>(),
   paymentReference: text("payment_reference"), // * Mungkin nanti tambahin providernya sebagai table
   status: enumPaymentStatus().default("PENDING"),
   createdAt: timestamp("created_at").defaultNow(),

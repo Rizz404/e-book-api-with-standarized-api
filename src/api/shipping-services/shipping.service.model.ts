@@ -12,7 +12,10 @@ const ShippingServiceModel = pgTable("shipping_services", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({ length: 50 }).notNull(),
   description: text(),
-  price: decimal({ precision: 10, scale: 2 }).notNull().default("0.00"),
+  price: decimal({ precision: 10, scale: 2 })
+    .notNull()
+    .default("0.00")
+    .$type<number>(),
   estimationTime: varchar("estimation_time").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")

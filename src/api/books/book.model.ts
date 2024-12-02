@@ -45,7 +45,10 @@ const BookModel = pgTable(
     publicationDate: date("publication_date").notNull(),
     slug: varchar().notNull(),
     isbn: varchar().notNull(),
-    price: decimal({ precision: 10, scale: 2 }).notNull().default("0.00"),
+    price: decimal({ precision: 10, scale: 2 })
+      .notNull()
+      .default("0.00")
+      .$type<number>(),
     stock: integer().notNull().default(0),
     status: enumBookStatus().default("AVAILABLE"),
     fileUrl: varchar("file_url", { length: 255 }).notNull(),

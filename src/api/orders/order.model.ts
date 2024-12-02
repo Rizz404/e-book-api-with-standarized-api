@@ -1,4 +1,5 @@
-import { sql } from "drizzle-orm";
+import { InferSelectModel, sql } from "drizzle-orm";
+import { InferInsertModel } from "drizzle-orm";
 import { decimal, integer, pgEnum, timestamp, uuid } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core";
 
@@ -31,17 +32,20 @@ const OrderModel = pgTable("orders", {
   quantity: integer().notNull().default(0),
   priceSold: decimal("price_sold", { precision: 10, scale: 2 })
     .notNull()
-    .default("0.00"),
+    .default("0.00")
+    .$type<number>(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 })
     .notNull()
-    .default("0.00"),
-  shippingStatus: enumShippingStatus() // Status pengiriman (Pending, Shipped, Delivered)
-    .notNull()
-    .default("PENDING"),
+    .default("0.00")
+    .$type<number>(),
+  shippingStatus: enumShippingStatus().notNull().default("PENDING"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+export type InsertOrderDTO = InferInsertModel<typeof OrderModel>;
+export type SelectOrderDTO = InferSelectModel<typeof OrderModel>;
 
 export default OrderModel;
