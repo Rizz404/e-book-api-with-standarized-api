@@ -23,7 +23,7 @@ router
     // schemaValidatorMiddleware(createLanguageSchema),
     createLanguage,
   )
-  .get(authMiddleware(), getLanguages);
+  .get(getLanguages);
 router.get("/search", getLanguagesLikeColumn);
 router
   .route("/:languageId")

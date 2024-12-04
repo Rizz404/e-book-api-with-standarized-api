@@ -23,7 +23,7 @@ router
     // schemaValidatorMiddleware(createAuthorSchema),
     createAuthor,
   )
-  .get(authMiddleware(), getAuthors);
+  .get(getAuthors);
 router.get("/search", getAuthorsLikeColumn);
 router
   .route("/:authorId")

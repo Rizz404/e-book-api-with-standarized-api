@@ -22,7 +22,7 @@ router
     // schemaValidatorMiddleware(createBookSchema),
     createBook,
   )
-  .get(authMiddleware(), getBooks);
+  .get(getBooks);
 router.get("/search", getBooksLikeColumn);
 router
   .route("/:bookId")

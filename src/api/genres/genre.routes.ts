@@ -23,7 +23,7 @@ router
     // schemaValidatorMiddleware(createGenreSchema),
     createGenre,
   )
-  .get(authMiddleware(), getGenres);
+  .get(getGenres);
 router.get("/search", getGenresLikeColumn);
 router
   .route("/:genreId")

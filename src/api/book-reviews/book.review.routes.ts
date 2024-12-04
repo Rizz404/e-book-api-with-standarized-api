@@ -21,7 +21,7 @@ router
     // schemaValidatorMiddleware(createBookReviewSchema),
     createBookReview,
   )
-  .get(authMiddleware(), getBookReviews);
+  .get(getBookReviews);
 router
   .route("/:bookReviewId")
   .get(getBookReviewById)

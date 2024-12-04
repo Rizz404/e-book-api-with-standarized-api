@@ -23,7 +23,7 @@ router
     // schemaValidatorMiddleware(createPaymentMethodSchema),
     createPaymentMethod,
   )
-  .get(authMiddleware(), getPaymentMethods);
+  .get(getPaymentMethods);
 router.get("/search", getPaymentMethodsLikeColumn);
 router
   .route("/:paymentMethodId")

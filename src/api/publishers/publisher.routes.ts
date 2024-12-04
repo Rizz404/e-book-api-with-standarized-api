@@ -23,7 +23,7 @@ router
     // schemaValidatorMiddleware(createPublisherSchema),
     createPublisher,
   )
-  .get(authMiddleware(), getPublishers);
+  .get(getPublishers);
 router.get("/search", getPublishersLikeColumn);
 router
   .route("/:publisherId")
