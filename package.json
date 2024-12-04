@@ -8,6 +8,7 @@
     "start": "node dist/main.js",
     "build": "tsc",
     "lint": "eslint --fix",
+    "swagger:generate": "ts-node src/config/swagger-config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",

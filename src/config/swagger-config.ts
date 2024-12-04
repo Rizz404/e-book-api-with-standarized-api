@@ -3,26 +3,20 @@ import swaggerAutogen from "swagger-autogen";
 const doc = {
   info: {
     version: "v1.0.0",
-    title: "Swagger Demo Project",
-    description: "Implementation of Swagger with TypeScript",
+    title: "E-Book Api",
+    description:
+      "API untuk mengelola e-book, mencakup autentikasi pengguna, katalog e-book, pembelian, dan notifikasi. Dibangun dengan Express.js dan TypeScript untuk performa yang aman dan skalabel.",
   },
   servers: [
     {
       url: "http://localhost:5000",
-      description: "",
+      description: "Masih lokal bang",
     },
   ],
-  components: {
-    securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-      },
-    },
-  },
+  components: {},
 };
 
-const outputFile = "../swagger_output.json";
+const outputFile = "../../swagger.json";
 const endpointsFiles = ["./src/routes.ts"];
 
 swaggerAutogen({ openapi: "3.0.0" })(outputFile, endpointsFiles, doc);

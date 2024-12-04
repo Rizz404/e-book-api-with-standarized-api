@@ -18,7 +18,6 @@ import UserModel, { InsertUserDTO, SelectUserDTO } from "./user.model";
 import {
   createUserService,
   deleteUserService,
-  findUserByColumnService,
   findUserByIdService,
   findUserByUsernameOrEmailService,
   findUsersByFiltersService,

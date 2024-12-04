@@ -10,11 +10,11 @@ import http from "http";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 
+import swaggerOutput from "../swagger.json";
 import { pool } from "./config/database-config";
 import limiter from "./config/limiter-config";
 import apiKeyMiddleware from "./middleware/api-key-middleware";
 import routes from "./routes";
-import swaggerOutput from "./swagger_output.json";
 import logger from "./utils/logger";
 
 // * INIT

@@ -18,6 +18,7 @@ import { createUserSchema } from "./user.validations";
 
 const router = express.Router();
 
+// #swagger.tags = ['Users']
 router
   .route("/")
   .post(
@@ -32,7 +33,7 @@ router
   .get(authMiddleware(), getCurrentUser)
   .patch(authMiddleware(), updateCurrentUser);
 router.get("/search", getUsersLikeColumn);
-router.patch("/update-password", updateCurrentUserPassword);
+router.patch("/update-password", authMiddleware(), updateCurrentUserPassword);
 router
   .route("/:userId")
   .get(getUserById)

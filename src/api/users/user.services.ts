@@ -41,7 +41,7 @@ export const createUserService = async (userData: SelectUserDTO) => {
         role,
         profilePicture,
       })
-      .returning(userResponse)
+      .returning()
   )[0];
 };
 
