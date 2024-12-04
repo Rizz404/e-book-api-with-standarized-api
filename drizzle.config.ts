@@ -7,7 +7,10 @@ export default defineConfig({
   schema: "./src/drizzle/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL as string,
+    url:
+      process.env.STATUS === "development"
+        ? (process.env.DATABASE_URL_LOCAL as string)
+        : (process.env.DATABASE_URL as string),
   },
   verbose: true, // * Nanti ada di console
   strict: true, // * Biar ada confirmation dulu
