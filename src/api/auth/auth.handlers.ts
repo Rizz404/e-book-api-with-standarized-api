@@ -43,7 +43,7 @@ export const signUp: RequestHandler = async (req, res) => {
 
     const token = generateEmailConfirmationToken(newUser.id, newUser.email);
 
-    const redirectLink = `http://localhost:5000/api/auth/verify-email?token=${token}`;
+    const redirectLink = `${process.env.BASE_URL}/auth/verify-email?token=${token}`;
 
     const message: SendMailOptions = {
       from: process.env.GMAIL_APP_USER,
