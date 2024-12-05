@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import Joi, { ValidationOptions } from "joi";
 
-import { createErrorResponse } from "../utils/api-response-util";
+import { createErrorResponse } from "../utils/api.response.utils";
 
 const supportedMethods = ["POST", "PUT", "PATCH", "DELETE"];
 

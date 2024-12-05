@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 
-import { createErrorResponse } from "../utils/api-response-util";
+import { createErrorResponse } from "../utils/api.response.utils";
 
 type AllowedRole = "USER" | "ADMIN";
 

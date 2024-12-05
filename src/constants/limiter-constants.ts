@@ -1,6 +1,6 @@
 import { Options } from "express-rate-limit";
 
-import { APIResponse, createErrorResponse } from "../utils/api-response-util";
+import { APIResponse, createErrorResponse } from "../utils/api.response.utils";
 
 type RateLimiterOptionKey = "api" | "signUp" | "signIn";
 

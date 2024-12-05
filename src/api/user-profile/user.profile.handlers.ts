@@ -3,7 +3,7 @@ import { RequestHandler } from "express";
 import {
   createErrorResponse,
   createSuccessResponse,
-} from "../../utils/api-response-util";
+} from "../../utils/api.response.utils";
 import { InsertUserProfileDTO } from "./user.profile.model";
 import {
   createUserProfileService,

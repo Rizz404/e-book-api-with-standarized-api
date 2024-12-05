@@ -1,11 +1,11 @@
 import { RequestHandler } from "express";
 
+import { parsePagination } from "../../utils/api.request.utils";
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
-} from "../../utils/api-response-util";
-import parsePagination from "../../utils/parse-pagination";
+} from "../../utils/api.response.utils";
 import GenreModel, { InsertGenreDTO, SelectGenreDTO } from "./genre.model";
 import {
   createGenreService,

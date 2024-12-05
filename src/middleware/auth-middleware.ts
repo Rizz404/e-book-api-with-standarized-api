@@ -1,7 +1,7 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 
-import { createErrorResponse } from "../utils/api-response-util";
+import { createErrorResponse } from "../utils/api.response.utils";
 
 interface ReqUser {
   id: string;

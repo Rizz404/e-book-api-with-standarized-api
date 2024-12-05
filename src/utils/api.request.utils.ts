@@ -1,4 +1,4 @@
-const parsePagination = (
+export const parsePagination = (
   page: string | undefined,
   limit: string | undefined,
 ) => {
@@ -8,5 +8,3 @@ const parsePagination = (
 
   return { currentPage, itemsPerPage, offset };
 };
-
-export default parsePagination;

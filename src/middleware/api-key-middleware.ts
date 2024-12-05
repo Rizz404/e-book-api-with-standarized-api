@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 
 import allowedApiKeys from "../config/allowed-api-keys";
-import { createErrorResponse } from "../utils/api-response-util";
+import { createErrorResponse } from "../utils/api.response.utils";
 
 const apiKeyMiddleware: RequestHandler = (req, res, next) => {
   try {

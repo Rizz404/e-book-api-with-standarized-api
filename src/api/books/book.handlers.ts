@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
 
+import { parsePagination } from "../../utils/api.request.utils";
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
-} from "../../utils/api-response-util";
-import parsePagination from "../../utils/parse-pagination";
-import { addFilters } from "../../utils/query-utils";
+} from "../../utils/api.response.utils";
+import { addFilters } from "../../utils/query.utils";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "./book.model";
 import {
   createBookService,

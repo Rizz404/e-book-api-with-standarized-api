@@ -6,7 +6,7 @@ import transporter from "../../config/nodemailer-transporter-config";
 import {
   createErrorResponse,
   createSuccessResponse,
-} from "../../utils/api-response-util";
+} from "../../utils/api.response.utils";
 import { createUserProfileService } from "../user-profile/user.profile.services";
 import { InsertUserDTO, SelectUserDTO } from "../users/user.model";
 import {
