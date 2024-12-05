@@ -8,6 +8,7 @@ import express from "express";
 import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
+import path from "path";
 import swaggerUi from "swagger-ui-express";
 
 import swaggerOutput from "../swagger.json";
@@ -34,6 +35,12 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // * Routes
 // app.use(apiKeyMiddleware);
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./views/index.html"));
+});
+app.get("/api", (req, res) => {
+  res.sendFile(path.join(__dirname, "./views/api_page.html"));
+});
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use("/api", routes);
 
