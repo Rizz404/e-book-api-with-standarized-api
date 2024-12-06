@@ -9,6 +9,7 @@ import helmet from "helmet";
 import http from "http";
 import morgan from "morgan";
 import path from "path";
+import { Server } from "socket.io";
 import swaggerUi from "swagger-ui-express";
 
 import swaggerOutput from "../swagger.json";
@@ -19,9 +20,12 @@ import routes from "./routes";
 import logger from "./utils/logger.util";
 
 // * INIT
-const app = express();
-const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+const app = express();
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: "http://localhost:5000" },
+});
 
 // * Middleware (Urutannya gini yang bener)
 app.use(compression()); // * Kompresi di awal
@@ -57,7 +61,16 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 // * Server
-server.listen(PORT, () => {
+io.on("connection", (socket) => {
+  logger.info(`Socket connected`);
+  socket.emit("hello", "world");
+
+  socket.on("disconnect", () => {
+    logger.info(`Socket disconnected`);
+  });
+});
+
+httpServer.listen(PORT, () => {
   logger.info(`Server run on port http://localhost:${PORT}`);
 });
 
@@ -68,17 +81,17 @@ pool.on("error", (err) => logger.error("Error di pool:", err));
 
 // * Graceful Shutdown
 process.on("SIGTERM", () => {
-  logger.info("SIGTERM received. Closing server gracefully...");
-  server.close(() => {
+  logger.info("SIGTERM received. Closing httpServer gracefully...");
+  httpServer.close(() => {
     logger.info("All connections closed. Server shut down.");
   });
 });
 
 process.on("SIGINT", async () => {
-  logger.info("SIGINT received (Ctrl+C). Closing server gracefully...");
+  logger.info("SIGINT received (Ctrl+C). Closing httpServer gracefully...");
   logger.info("Close database pool");
   await pool.end();
-  server.close(() => {
+  httpServer.close(() => {
     logger.info("All connections closed. Server shut down.");
   });
 });

@@ -19,8 +19,7 @@ router
   .route("/")
   .post(
     authMiddleware(),
-    // roleValidationMiddleware(["ADMIN"]),
-    // schemaValidatorMiddleware(createShippingServiceSchema),
+    roleValidationMiddleware(["ADMIN"]),
     createShippingService,
   )
   .get(authMiddleware(), getShippingServices);
