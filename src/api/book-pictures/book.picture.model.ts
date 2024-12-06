@@ -1,8 +1,9 @@
-import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
+import { eq, InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
   boolean,
   pgTable,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -24,7 +25,11 @@ const BookPictureModel = pgTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [uniqueIndex().on(table.bookId, table.isCover)],
+  (table) => ({
+    uniqueCover: uniqueIndex("unique_index_book_cover")
+      .on(table.bookId, table.isCover)
+      .where(eq(table.isCover, sql`true`)),
+  }),
 );
 
 export type InsertBookPictureDTO = InferSelectModel<typeof BookPictureModel>;

@@ -12,7 +12,9 @@ import {
 
 import db from "../../config/database-config";
 import AuthorModel from "../authors/author.model";
+import BookGenreModel from "../book-genre/book.genre.model";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "../books/book.model";
+import GenreModel from "../genres/genre.model";
 import LanguageModel from "../languages/language.model";
 import PublisherModel from "../publishers/publisher.model";
 import UserModel from "../users/user.model";
@@ -20,11 +22,7 @@ import { findUserByIdService } from "../users/user.services";
 
 export const bookResponse = {
   id: BookModel.id,
-  authorId: BookModel.authorId,
-  sellerId: BookModel.sellerId,
   description: BookModel.description,
-  publisherId: BookModel.publisherId,
-  languageId: BookModel.languageId,
   title: BookModel.title,
   publicationDate: BookModel.publicationDate,
   slug: BookModel.slug,
@@ -51,7 +49,9 @@ export const bookResponse = {
   language: LanguageModel.name,
 };
 
-export const createBookService = async (bookData: InsertBookDTO) => {
+export const createBookService = async (
+  bookData: Omit<InsertBookDTO, "slug" | "isbn">,
+) => {
   const { title, sellerId } = bookData;
 
   const seller = await findUserByIdService(sellerId);
@@ -76,6 +76,8 @@ export const findBooksByFiltersService = async (
   const books = await db
     .select(bookResponse)
     .from(BookModel)
+    .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId))
+    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
     .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
     .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
     .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
@@ -104,6 +106,8 @@ export const findBooksLikeColumnService = async (
   const books = await db
     .select(bookResponse)
     .from(BookModel)
+    .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId))
+    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
     .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
     .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
     .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
@@ -121,6 +125,8 @@ export const findBookByIdService = async (id: string) => {
     await db
       .select(bookResponse)
       .from(BookModel)
+      .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId))
+      .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
       .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
       .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
       .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
@@ -140,6 +146,8 @@ export const findBookByColumnService = async <
     await db
       .select(bookResponse)
       .from(BookModel)
+      .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId))
+      .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
       .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
       .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
       .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))

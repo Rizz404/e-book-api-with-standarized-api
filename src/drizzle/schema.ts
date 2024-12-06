@@ -3,6 +3,7 @@
 
 import AuthorFollowModel from "../api/author-follows/author.follow.model";
 import AuthorModel from "../api/authors/author.model";
+import BookGenreModel from "../api/book-genre/book.genre.model";
 import BookPictureModel from "../api/book-pictures/book.picture.model";
 import BookReviewModel from "../api/book-reviews/book.review.model";
 import BookModel, { enumBookStatus } from "../api/books/book.model";
@@ -15,7 +16,6 @@ import OrderModel, { enumShippingStatus } from "../api/orders/order.model";
 import PaymentMethodModel from "../api/payment-methods/payment.method.model";
 import PublisherFollowModel from "../api/publisher-follows/publisher.follow.model";
 import PublisherModel from "../api/publishers/publisher.model";
-import BookGenreModel from "../api/relations/book-genre.model";
 import ShippingServiceModel from "../api/shipping-services/shipping.service.model";
 import TransactionModel, {
   enumPaymentStatus,

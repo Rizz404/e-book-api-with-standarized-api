@@ -8,6 +8,13 @@ import {
   createSuccessResponse,
 } from "../../utils/api.response.utils";
 import { addFilters } from "../../utils/query.utils";
+import { InsertBookGenreDTO } from "../book-genre/book.genre.model";
+import { createBookGenresService } from "../book-genre/book.genre.services";
+import {
+  InsertBookPictureDTO,
+  SelectBookPictureDTO,
+} from "../book-pictures/book.picture.model";
+import { createBookPicturesService } from "../book-pictures/book.picture.services";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "./book.model";
 import {
   createBookService,
@@ -23,6 +30,10 @@ import {
 export const createBook: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
+    const bookData: InsertBookDTO & {
+      bookGenres: InsertBookGenreDTO[];
+      bookPictures: InsertBookPictureDTO[];
+    } = req.body;
 
     if (!userId) {
       return createErrorResponse(
@@ -32,15 +43,47 @@ export const createBook: RequestHandler = async (req, res) => {
       );
     }
 
-    const bookData: InsertBookDTO = req.body;
-
     const book = await findBookByColumnService("slug", bookData.slug);
 
     if (book) {
       return createErrorResponse(res, "Book already exist", 400);
     }
 
-    const newBook = await createBookService({ ...bookData, sellerId: userId });
+    const newBook = await createBookService({
+      authorId: bookData.authorId,
+      description: bookData.description,
+      publisherId: bookData.publisherId,
+      languageId: bookData.languageId,
+      title: bookData.title,
+      publicationDate: bookData.publicationDate,
+      fileUrl: bookData.fileUrl,
+      sellerId: userId,
+    });
+
+    const bookGenres: InsertBookGenreDTO[] = bookData.bookGenres.map(
+      (genre) => ({
+        bookId: newBook.id,
+        genreId: genre.genreId,
+      }),
+    );
+    const bookPictures: SelectBookPictureDTO[] = bookData.bookPictures.map(
+      (bookPicture) => ({
+        url: bookPicture.url,
+        isCover: bookPicture.isCover || false,
+        bookId: newBook.id,
+      }),
+    );
+
+    console.log(bookData);
+
+    if (newBook) {
+      if (bookData.bookGenres.length > 0) {
+        await createBookGenresService(bookGenres);
+      }
+      if (bookData.bookPictures.length > 0) {
+        await createBookPicturesService(bookPictures);
+      }
+    }
 
     createSuccessResponse(res, newBook, "Book created successfully", 201);
   } catch (error) {
@@ -156,14 +199,14 @@ export const updateBookById: RequestHandler = async (req, res) => {
     const existingBook = await findBookByIdService(bookId);
 
     console.log(`userId: ${userId}`);
-    console.log(`sellerId: ${existingBook.sellerId}`);
+    console.log(`sellerId: ${existingBook.seller?.id}`);
     console.log(`role: ${role}`);
 
     if (!existingBook) {
       return createErrorResponse(res, "Book not found", 404);
     }
 
-    if (existingBook.sellerId !== userId && role !== "ADMIN") {
+    if (existingBook.seller?.id !== userId && role !== "ADMIN") {
       return createErrorResponse(
         res,
         "You don't have permission to update this book",
@@ -201,7 +244,7 @@ export const deleteBookById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Book not found", 404);
     }
 
-    if (existingBook.sellerId !== userId && role !== "ADMIN") {
+    if (existingBook.seller?.id !== userId && role !== "ADMIN") {
       return createErrorResponse(
         res,
         "You don't have permission to delete this book",

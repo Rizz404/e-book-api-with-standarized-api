@@ -36,6 +36,20 @@
       "when": 1733114461712,
       "tag": "0004_add_is_email_verified_to_user",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1733504064883,
+      "tag": "0005_fix_cover_image",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1733504566079,
+      "tag": "0006_fix_cover_image_2",
+      "breakpoints": true
     }
   ]
 }

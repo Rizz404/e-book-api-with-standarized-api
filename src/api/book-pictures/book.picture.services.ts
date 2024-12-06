@@ -8,11 +8,9 @@ import BookPictureModel, {
 } from "./book.picture.model";
 
 export const createBookPicturesService = async (
-  bookPictureData: InsertBookPictureDTO[],
+  bookPictureData: SelectBookPictureDTO[],
 ) => {
-  return (
-    await db.insert(BookPictureModel).values(bookPictureData).returning()
-  )[0];
+  return await db.insert(BookPictureModel).values(bookPictureData).returning();
 };
 
 export const findBookPicturesByBookIdService = async (
