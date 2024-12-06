@@ -19,8 +19,7 @@ router
   .route("/")
   .post(
     authMiddleware(),
-    // roleValidationMiddleware(["ADMIN"]),
-    // schemaValidatorMiddleware(createPaymentMethodSchema),
+    roleValidationMiddleware(["ADMIN"]),
     createPaymentMethod,
   )
   .get(getPaymentMethods);
