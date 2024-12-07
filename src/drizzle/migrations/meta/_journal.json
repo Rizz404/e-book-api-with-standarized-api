@@ -50,6 +50,13 @@
       "when": 1733504566079,
       "tag": "0006_fix_cover_image_2",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1733543209748,
+      "tag": "0007_add_cascade_constraint",
+      "breakpoints": true
     }
   ]
 }

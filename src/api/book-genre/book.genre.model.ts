@@ -8,10 +8,16 @@ const BookGenreModel = pgTable(
   "book_genre",
   {
     bookId: uuid("book_id")
-      .references(() => BookModel.id)
+      .references(() => BookModel.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
       .notNull(),
     genreId: uuid("genre_id")
-      .references(() => GenreModel.id)
+      .references(() => GenreModel.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
       .notNull(),
   },
   (table) => [primaryKey({ columns: [table.bookId, table.genreId] })],

@@ -83,6 +83,7 @@ export const findOrdersByFiltersService = async (
   offset: number,
   filters?: Filter,
 ) => {
+  // * Nanti ganti pake array kalo gabut, sekarang jangan dulu
   let filtersQuery: SQL<unknown> | undefined;
 
   if (filters && filters.userId) {

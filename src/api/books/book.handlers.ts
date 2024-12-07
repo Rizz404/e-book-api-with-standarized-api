@@ -60,23 +60,29 @@ export const createBook: RequestHandler = async (req, res) => {
       sellerId: userId,
     });
 
-    const bookGenres: InsertBookGenreDTO[] = bookData.bookGenres.map(
-      (genre) => ({
-        bookId: newBook.id,
-        genreId: genre.genreId,
-      }),
-    );
-    const bookPictures: SelectBookPictureDTO[] = bookData.bookPictures.map(
-      (bookPicture) => ({
-        url: bookPicture.url,
-        isCover: bookPicture.isCover || false,
-        bookId: newBook.id,
-      }),
-    );
+    if (bookData.bookGenres.length >= 12) {
+      return createErrorResponse(res, "Max genres is 12", 400);
+    }
 
-    console.log(bookData);
+    if (bookData.bookPictures.length >= 10) {
+      return createErrorResponse(res, "Max pictures is 10", 400);
+    }
 
     if (newBook) {
+      const bookGenres: InsertBookGenreDTO[] = bookData.bookGenres.map(
+        (genre) => ({
+          bookId: newBook.id,
+          genreId: genre.genreId,
+        }),
+      );
+      const bookPictures: SelectBookPictureDTO[] = bookData.bookPictures.map(
+        (bookPicture) => ({
+          url: bookPicture.url,
+          isCover: bookPicture.isCover || false,
+          bookId: newBook.id,
+        }),
+      );
+
       if (bookData.bookGenres.length > 0) {
         await createBookGenresService(bookGenres);
       }
@@ -98,23 +104,29 @@ export const getBooks: RequestHandler = async (req, res) => {
       page = "1",
       limit = "10",
       status,
+      publicationDateRange,
+      language,
     } = req.query as unknown as Partial<SelectBookDTO> & {
       page?: string;
       limit?: string;
+      publicationDateRange?: string;
+      language?: string;
     };
 
     // * Validasi dan parsing `page` dan `limit` pake function
     const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
 
-    // * Filter
-    const filters = addFilters(BookModel, [
-      status ? (table) => eq(table.status, status) : undefined,
-    ]);
+    const publicationDateRangeFilter = publicationDateRange
+      ? (() => {
+          const [start, end] = publicationDateRange.split(",");
+          return { start, end };
+        })()
+      : undefined;
 
     const { books, totalItems } = await findBooksByFiltersService(
       limit,
       offset,
-      filters,
+      { status, publicationDateRange: publicationDateRangeFilter, language },
     );
 
     createSuccessResponse(

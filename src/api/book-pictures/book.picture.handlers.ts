@@ -35,11 +35,9 @@ export const addBookPictures: RequestHandler = async (req, res) => {
       );
     }
 
-    const filters = addFilters(BookModel, [
-      (table) => eq(table.sellerId, userId),
-    ]);
-
-    const userBooks = await findBooksByFiltersService("10", 0, filters);
+    const userBooks = await findBooksByFiltersService("10", 0, {
+      sellerId: userId,
+    });
     const userBookIds = userBooks.books.map((book) => book.id);
 
     const invalidBookIds = bookPicturesData

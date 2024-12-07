@@ -16,7 +16,10 @@ const BookPictureModel = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     bookId: uuid("book_id")
-      .references(() => BookModel.id)
+      .references(() => BookModel.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
       .notNull(),
     url: varchar({ length: 255 }).notNull(),
     isCover: boolean("is_cover").notNull().default(false),
