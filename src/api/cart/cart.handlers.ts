@@ -46,7 +46,7 @@ export const createCart: RequestHandler = async (req, res) => {
   }
 };
 
-export const cartCheckout: RequestHandler = async (req, res) => {
+export const cartUserCheckout: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
     const cartData: (SelectCartItemDTO & { shippingServiceId: string })[] & {

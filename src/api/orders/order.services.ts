@@ -23,33 +23,56 @@ export const createOrderService = async (
   const { userId, bookId, quantity, shippingServiceId } = orderData;
 
   return await db.transaction(async (tx) => {
+    // Ambil data buku
     const [book] = await tx
       .select()
       .from(BookModel)
       .where(eq(BookModel.id, bookId))
       .limit(1);
 
-    if (quantity > book.stock || book.status !== "AVAILABLE") {
+    if (!book) {
       tx.rollback();
+      throw new Error("Book not found or unavailable.");
     }
 
+    console.log(`Book in order transaction: ${JSON.stringify(book, null, 2)}`);
+
+    if (quantity > book.stock || book.status !== "AVAILABLE") {
+      tx.rollback();
+      throw new Error("Invalid quantity or book is unavailable.");
+    }
+
+    // Ambil data shipping service
     const [shippingService] = await tx
       .select()
       .from(ShippingServiceModel)
       .where(eq(ShippingServiceModel.id, shippingServiceId))
       .limit(1);
 
+    if (!shippingService) {
+      tx.rollback();
+      throw new Error("Shipping service not found.");
+    }
+
+    // Ambil data payment method
     const [paymentMethod] = await tx
       .select()
       .from(PaymentMethodModel)
       .where(eq(PaymentMethodModel.id, paymentMethodId))
       .limit(1);
 
+    if (!paymentMethod) {
+      tx.rollback();
+      throw new Error("Payment method not found.");
+    }
+
+    // Hitung total harga
     const subtotalPrice = book.price * quantity;
     const adminFee = 2500;
     const discount = 0;
     const totalPrice = subtotalPrice + adminFee - discount * 100;
 
+    // Buat transaksi
     const [createTransaction] = await tx
       .insert(TransactionModel)
       .values({
@@ -64,6 +87,12 @@ export const createOrderService = async (
       })
       .returning();
 
+    if (!createTransaction) {
+      tx.rollback();
+      throw new Error("Failed to create transaction.");
+    }
+
+    // Buat order
     const [createOrder] = await tx
       .insert(OrderModel)
       .values({
@@ -73,6 +102,11 @@ export const createOrderService = async (
         priceSold: book.price,
       })
       .returning();
+
+    if (!createOrder) {
+      tx.rollback();
+      throw new Error("Failed to create order.");
+    }
 
     return createOrder;
   });

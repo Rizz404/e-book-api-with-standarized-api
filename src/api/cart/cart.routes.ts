@@ -2,7 +2,7 @@ import express from "express";
 
 import { authMiddleware } from "../../middleware/auth-middleware";
 import {
-  cartCheckout,
+  cartUserCheckout,
   createCart,
   deleteCartById,
   getCartById,
@@ -17,7 +17,8 @@ router
   .route("/user")
   .post(authMiddleware(), createCart)
   .get(authMiddleware(), getCurrentUserCart);
-router.post("/checkout", authMiddleware(), cartCheckout);
+// * Hardest part not yet tested
+router.post("/user/checkout", authMiddleware(), cartUserCheckout);
 router
   .route("/:cartId")
   .get(getCartById)

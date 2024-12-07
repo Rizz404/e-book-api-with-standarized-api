@@ -16,11 +16,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(
-    authMiddleware(),
-    // schemaValidatorMiddleware(createOrderSchema),
-    createOrder,
-  )
+  .post(authMiddleware(), createOrder)
   .get(authMiddleware(), getOrders);
 router
   .route("/:orderId")
