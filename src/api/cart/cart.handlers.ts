@@ -114,6 +114,30 @@ export const getCartById: RequestHandler = async (req, res) => {
   }
 };
 
+export const getCurrentUserCart: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return createErrorResponse(
+        res,
+        "Something went wrong, id not found",
+        403,
+      );
+    }
+
+    const cart = await findCartByColumnService("userId", userId);
+
+    if (!cart) {
+      return createErrorResponse(res, "Cart not found", 404);
+    }
+
+    createSuccessResponse(res, cart);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
 // *==========*==========*==========PATCH==========*==========*==========*
 
 // *==========*==========*==========DELETE==========*==========*==========*

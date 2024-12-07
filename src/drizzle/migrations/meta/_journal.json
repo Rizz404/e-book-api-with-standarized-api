@@ -57,6 +57,20 @@
       "when": 1733543209748,
       "tag": "0007_add_cascade_constraint",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1733561977170,
+      "tag": "0008_add_cascade_constraint_for_cart_items",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1733563630676,
+      "tag": "0009_add_unique_constraint_to_cart_item",
+      "breakpoints": true
     }
   ]
 }

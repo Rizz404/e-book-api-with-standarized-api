@@ -53,6 +53,8 @@ export const bookResponse = {
   status: BookModel.status,
   slug: BookModel.slug,
   isbn: BookModel.isbn,
+  stock: BookModel.stock,
+  price: BookModel.price,
   fileUrl: BookModel.fileUrl,
   publicationDate: BookModel.publicationDate,
   author: {

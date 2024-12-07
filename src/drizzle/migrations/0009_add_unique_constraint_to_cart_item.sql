@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "cart_items_cart_id_book_id_index" ON "cart_items" USING btree ("cart_id","book_id");

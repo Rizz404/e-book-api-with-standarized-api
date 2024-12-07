@@ -58,6 +58,8 @@ export const createBook: RequestHandler = async (req, res) => {
       publicationDate: bookData.publicationDate,
       fileUrl: bookData.fileUrl,
       sellerId: userId,
+      price: bookData.price,
+      stock: bookData.stock,
     });
 
     if (bookData.bookGenres.length >= 12) {

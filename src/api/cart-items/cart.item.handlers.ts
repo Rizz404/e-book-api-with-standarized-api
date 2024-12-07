@@ -8,7 +8,11 @@ import {
   createSuccessResponse,
 } from "../../utils/api.response.utils";
 import { addFilters } from "../../utils/query.utils";
-import { findCartByColumnService } from "../cart/cart.services";
+import { findBookByIdService } from "../books/book.services";
+import {
+  findCartByColumnService,
+  findCartByIdService,
+} from "../cart/cart.services";
 import CartItemModel, {
   InsertCartItemDTO,
   SelectCartItemDTO,
@@ -26,6 +30,25 @@ import {
 // *==========*==========*==========POST==========*==========*==========*
 export const createCartItem: RequestHandler = async (req, res) => {
   try {
+    const cartItemData: InsertCartItemDTO = req.body;
+
+    const newCartItem = await createCartItemService({
+      ...cartItemData,
+    });
+
+    createSuccessResponse(
+      res,
+      newCartItem,
+      "CartItem created successfully",
+      201,
+    );
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const createUserCartItem: RequestHandler = async (req, res) => {
+  try {
     const userId = req.user?.id;
     const cartItemData: InsertCartItemDTO = req.body;
 
@@ -35,6 +58,12 @@ export const createCartItem: RequestHandler = async (req, res) => {
         "Something went wrong, id not found",
         403,
       );
+    }
+
+    const book = await findBookByIdService(cartItemData.bookId);
+
+    if (cartItemData.quantity! > book.stock) {
+      return createErrorResponse(res, "Stock not enough", 403);
     }
 
     const userCart = await findCartByColumnService("userId", userId);
@@ -49,6 +78,7 @@ export const createCartItem: RequestHandler = async (req, res) => {
 
     const newCartItem = await createCartItemService({
       ...cartItemData,
+      quantity: cartItemData.quantity ?? 0,
       cartId: userCart.carts.id,
     });
 
@@ -65,6 +95,39 @@ export const createCartItem: RequestHandler = async (req, res) => {
 
 // *==========*==========*==========GET==========*==========*==========*
 export const getCartItemsByCartId: RequestHandler = async (req, res) => {
+  try {
+    const { cartId } = req.params;
+    const cart = await findCartByIdService(cartId);
+
+    if (!cart) {
+      return createErrorResponse(res, "Cart not found", 404);
+    }
+
+    const { page = "1", limit = "10" } =
+      req.query as unknown as Partial<SelectCartItemDTO> & {
+        page?: string;
+        limit?: string;
+      };
+
+    // * Validasi dan parsing `page` dan `limit` pake function
+    const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
+
+    const { cartItems, totalItems } = await findCartItemsByCartId(
+      cart.carts.id,
+      limit,
+      offset,
+    );
+
+    createSuccessResponse(
+      res,
+      createPaginatedResponse(cartItems, currentPage, itemsPerPage, totalItems),
+    );
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const getUserCartItems: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
 

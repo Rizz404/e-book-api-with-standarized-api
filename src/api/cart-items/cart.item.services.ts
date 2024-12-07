@@ -1,8 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { Column, count, desc, eq, ilike, SQL, SQLWrapper } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 import db from "../../config/database-config";
 import BookModel from "../books/book.model";
+import { findBookByIdService } from "../books/book.services";
 import CartItemModel, {
   InsertCartItemDTO,
   SelectCartItemDTO,
@@ -11,7 +13,21 @@ import CartItemModel, {
 export const createCartItemService = async (
   cartItemData: InsertCartItemDTO,
 ) => {
-  return (await db.insert(CartItemModel).values(cartItemData).returning())[0];
+  const book = await findBookByIdService(cartItemData.bookId);
+
+  return (
+    await db
+      .insert(CartItemModel)
+      .values({ ...cartItemData, priceAtCart: book.price })
+      .returning()
+      .onConflictDoUpdate({
+        target: [CartItemModel.cartId, CartItemModel.bookId],
+        set: {
+          quantity: sql`${CartItemModel.quantity} + ${cartItemData.quantity}`,
+          priceAtCart: book.price,
+        },
+      })
+  )[0];
 };
 
 export const findCartItemsByCartId = async (

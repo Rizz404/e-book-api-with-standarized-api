@@ -2,26 +2,25 @@ import express from "express";
 
 import { authMiddleware } from "../../middleware/auth-middleware";
 import roleValidationMiddleware from "../../middleware/role-validation-middleware";
-import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
 import {
   createCartItem,
+  createUserCartItem,
   deleteCartItemById,
   getCartItemById,
   getCartItemsByCartId,
+  getUserCartItems,
   updateCartItemById,
 } from "./cart.item.handlers";
-// import { createCartItemSchema } from "./cart.item.validations";
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(
-    authMiddleware(),
-    // schemaValidatorMiddleware(createCartItemSchema),
-    createCartItem,
-  )
-  .get(authMiddleware(), getCartItemsByCartId);
+  .post(authMiddleware(), roleValidationMiddleware(["ADMIN"]), createCartItem);
+router
+  .route("/user")
+  .post(authMiddleware(), createUserCartItem)
+  .get(authMiddleware(), getUserCartItems);
 router
   .route("/:cartItemId")
   .get(getCartItemById)
