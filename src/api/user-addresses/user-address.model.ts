@@ -29,7 +29,7 @@ const UserAddressModel = pgTable(
       .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
-    uniqueIndex("unique_index_book_cover")
+    uniqueIndex()
       .on(table.userId, table.isPrimaryAddress)
       .where(eq(table.isPrimaryAddress, sql`true`)),
   ],

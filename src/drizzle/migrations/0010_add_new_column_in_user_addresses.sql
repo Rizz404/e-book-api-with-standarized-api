@@ -1,0 +1,2 @@
+ALTER TABLE "user_addresses" ADD COLUMN "is_primary_address" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "user_addresses_user_id_is_primary_address_index" ON "user_addresses" USING btree ("user_id","is_primary_address") WHERE "user_addresses"."is_primary_address" = true;

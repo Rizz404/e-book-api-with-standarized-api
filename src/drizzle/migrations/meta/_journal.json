@@ -71,6 +71,13 @@
       "when": 1733563630676,
       "tag": "0009_add_unique_constraint_to_cart_item",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1733669366349,
+      "tag": "0010_add_new_column_in_user_addresses",
+      "breakpoints": true
     }
   ]
 }
