@@ -32,8 +32,8 @@ export const followUserByUserId: RequestHandler = async (req, res) => {
     }
 
     const alreadyFollowedUser = await findFollowedUserService(
-      userId,
       currentUserId,
+      userId,
     );
 
     if (alreadyFollowedUser) {
@@ -41,7 +41,7 @@ export const followUserByUserId: RequestHandler = async (req, res) => {
     }
 
     const followedUser = await followUserService({
-      followedUserId: userId,
+      followedUserId: currentUserId,
       followingUserId: userId,
     });
 
@@ -114,13 +114,13 @@ export const unFollowUserByUserId: RequestHandler = async (req, res) => {
       );
     }
 
-    const followingUser = await findFollowedUserService(userId, currentUserId);
+    const followingUser = await findFollowedUserService(currentUserId, userId);
 
     if (!followingUser) {
       return createErrorResponse(res, "Already unfollow this user", 400);
     }
 
-    await unfollowUserService(userId, userId);
+    await unfollowUserService(currentUserId, userId);
 
     createSuccessResponse(
       res,

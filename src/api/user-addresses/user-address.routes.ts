@@ -16,12 +16,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(
-    authMiddleware(),
-    roleValidationMiddleware(["ADMIN"]),
-    // schemaValidatorMiddleware(createUserAddressSchema),
-    createUserAddress,
-  )
+  .post(authMiddleware(), createUserAddress)
   .get(authMiddleware(), getUserAddresss);
 router
   .route("/:userAddressId")

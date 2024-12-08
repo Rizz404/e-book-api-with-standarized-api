@@ -61,8 +61,8 @@ export const findUsersFollowedService = async (
 };
 
 export const findFollowedUserService = async (
-  userId: string,
   currentUserId: string,
+  userId: string,
 ) => {
   return (
     await db
@@ -70,8 +70,8 @@ export const findFollowedUserService = async (
       .from(UserFollowModel)
       .where(
         and(
-          eq(UserFollowModel.followingUserId, userId),
           eq(UserFollowModel.followedUserId, currentUserId),
+          eq(UserFollowModel.followingUserId, userId),
         ),
       )
   )[0];
@@ -79,15 +79,15 @@ export const findFollowedUserService = async (
 
 // * * Gak usah returning kali, soalnya kan delete
 export const unfollowUserService = async (
-  userId: string,
   currentUserId: string,
+  userId: string,
 ) => {
   return await db
     .delete(UserFollowModel)
     .where(
       and(
-        eq(UserFollowModel.followingUserId, userId),
         eq(UserFollowModel.followedUserId, currentUserId),
+        eq(UserFollowModel.followingUserId, userId),
       ),
     );
 };

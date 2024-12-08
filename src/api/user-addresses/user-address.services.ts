@@ -39,7 +39,7 @@ export const findUserAddressesByUserIdService = async (
   const userAddresses = await db
     .select()
     .from(UserAddressModel)
-    .where(eq(UserAddressModel.id, userId))
+    .where(eq(UserAddressModel.userId, userId))
     .orderBy(desc(UserAddressModel.createdAt))
     .limit(parseInt(limit))
     .offset(offset);

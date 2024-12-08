@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.route("/").get(authMiddleware(), getUserPreferedLanguagesFollowed);
 router
-  .route("/:userId")
+  .route("/:languageId")
   .post(authMiddleware(), addUserPreferedLanguageByLanguageId)
   .delete(authMiddleware(), removeUserPreferedLanguageByLanguageId);
 

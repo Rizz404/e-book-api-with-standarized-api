@@ -21,9 +21,17 @@ import {
 // *==========*==========*==========POST==========*==========*==========*
 export const createUserAddress: RequestHandler = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const userAddressData: InsertUserAddressDTO = req.body;
 
-    const newUserAddress = await createUserAddressService(userAddressData);
+    if (!userId) {
+      return createErrorResponse(res, "User id not found");
+    }
+
+    const newUserAddress = await createUserAddressService({
+      ...userAddressData,
+      userId,
+    });
 
     createSuccessResponse(
       res,
