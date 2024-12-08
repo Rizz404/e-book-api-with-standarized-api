@@ -1,22 +1,56 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.0.3",
   "info": {
-    "version": "v1.0.0",
-    "title": "E-Book Api",
-    "description": "API untuk mengelola e-book, mencakup autentikasi pengguna, katalog e-book, pembelian, dan notifikasi. Dibangun dengan Express.js dan TypeScript untuk performa yang aman dan skalabel."
+    "title": "e-book api with drizzle",
+    "version": "1.0.0",
+    "contact": {}
   },
   "servers": [
     {
-      "url": "http://localhost:5000",
-      "description": "Masih lokal bang"
+      "url": "http://127.0.0.1:5000/api"
     }
   ],
   "paths": {
     "/auth/sign-up": {
       "post": {
-        "description": "",
+        "tags": ["auth"],
+        "summary": "register",
+        "description": "register",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "rizzthenotable@gmail.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "177013"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "rizz"
+                  }
+                }
+              },
+              "examples": {
+                "register": {
+                  "value": {
+                    "email": "rizzthenotable@gmail.com",
+                    "password": "177013",
+                    "username": "rizz"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
@@ -24,9 +58,39 @@
     },
     "/auth/sign-in": {
       "post": {
-        "description": "",
+        "tags": ["auth"],
+        "summary": "login",
+        "description": "login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "177013"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "rizz"
+                  }
+                }
+              },
+              "examples": {
+                "login": {
+                  "value": {
+                    "password": "177013",
+                    "username": "rizz"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
@@ -34,109 +98,253 @@
     },
     "/auth/refresh-token": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
+        "tags": ["auth"],
+        "summary": "refresh token",
+        "description": "refresh token",
+        "operationId": "refreshToken",
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "refreshToken": {
-                    "example": "any"
+                    "type": "string",
+                    "example": "{{refreshToken}}"
+                  }
+                }
+              },
+              "examples": {
+                "refresh token": {
+                  "value": {
+                    "refreshToken": "{{refreshToken}}"
                   }
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/auth/verify-email": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "token",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/users/": {
+    "/users": {
       "get": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "get users",
+        "description": "get users",
+        "operationId": "getUsers",
         "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "page",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "1"
             }
           },
           {
             "name": "limit",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "20"
             }
           },
           {
             "name": "role",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "ADMIN"
             }
           },
           {
             "name": "isVerified",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "false"
             }
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "post": {
-        "tags": [
-          "Users"
-        ],
-        "description": "",
+        "tags": ["users"],
+        "summary": "create user",
+        "description": "create user",
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "{{$randomEmail}}"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "177013"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "USER"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "{{$randomUserName}}"
+                  }
+                }
+              },
+              "examples": {
+                "create user": {
+                  "value": {
+                    "email": "{{$randomEmail}}",
+                    "password": "177013",
+                    "role": "USER",
+                    "username": "{{$randomUserName}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/users/{loggedInUserId}": {
+      "get": {
+        "tags": ["users"],
+        "summary": "get user by id",
+        "description": "get user by id",
+        "operationId": "getUserById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["users"],
+        "summary": "delete user by id",
+        "description": "delete user by id",
+        "operationId": "deleteUserById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["users"],
+        "summary": "patch user by id",
+        "description": "patch user by id",
+        "operationId": "patchUserById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "isEmailVerified": {
+                    "type": "string",
+                    "example": "true"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "ADMIN"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "{{loggedInUsername}}"
+                  }
+                }
+              },
+              "examples": {
+                "patch user by id": {
+                  "value": {
+                    "isEmailVerified": "true",
+                    "role": "ADMIN",
+                    "username": "{{loggedInUsername}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "loggedInUserId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/users/search": {
+      "get": {
+        "tags": ["users"],
+        "summary": "search users",
+        "description": "search users",
+        "operationId": "searchUsers",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
+            "name": "page",
+            "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "20"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "kityo@gmail.com"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "{{loggedInUsername}}"
             }
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
@@ -144,75 +352,65 @@
     },
     "/users/profile": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["users"],
+        "summary": "get profile",
+        "description": "get profile",
+        "operationId": "getProfile",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "get profile": {
+                  "value": {}
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["users"],
+        "summary": "patch profile",
+        "description": "patch profile",
+        "operationId": "patchProfile",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bio": {
+                    "type": "string",
+                    "example": "Member of kessoku band, take solo guitarist role"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "{{loggedInUsername}}"
+                  }
+                }
+              },
+              "examples": {
+                "patch profile": {
+                  "value": {
+                    "bio": "Member of kessoku band, take solo guitarist role",
+                    "username": "{{loggedInUsername}}"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/users/search": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "username",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "email",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
@@ -220,146 +418,498 @@
     },
     "/users/update-password": {
       "patch": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
+        "tags": ["users"],
+        "summary": "update current user password",
+        "description": "update current user password",
+        "operationId": "updateCurrentUserPassword",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "storedPassword": {
-                    "example": "any"
-                  },
                   "newPassword": {
-                    "example": "any"
+                    "type": "string",
+                    "example": "177013"
+                  },
+                  "storedPassword": {
+                    "type": "string",
+                    "example": "177013"
+                  }
+                }
+              },
+              "examples": {
+                "update current user password": {
+                  "value": {
+                    "newPassword": "177013",
+                    "storedPassword": "177013"
                   }
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/users/{userId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        },
         "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/authors/": {
+    "/shipping-services": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["shipping services"],
+        "summary": "get shipping services",
+        "description": "get shipping services",
+        "operationId": "getShippingServices",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["shipping services"],
+        "summary": "add shipping service",
+        "description": "add shipping service",
+        "operationId": "addShippingService",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "example": "{{$randomWords}}"
+                  },
+                  "estimationTime": {
+                    "type": "string",
+                    "example": "{{$randomWord}}"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomWord}}"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "{{$randomPrice}}"
+                  }
+                }
+              },
+              "examples": {
+                "add shipping service": {
+                  "value": {
+                    "description": "{{$randomWords}}",
+                    "estimationTime": "{{$randomWord}}",
+                    "name": "{{$randomWord}}",
+                    "price": "{{$randomPrice}}"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/shipping-services/09b17c92-70c9-472c-a9b0-46361e983895": {
+      "get": {
+        "tags": ["shipping services"],
+        "summary": "get shipping service by id",
+        "description": "get shipping service by id",
+        "operationId": "getShippingServiceById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["shipping services"],
+        "summary": "update shipping service",
+        "description": "update shipping service",
+        "operationId": "updateShippingService",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "example": "this is bank payment"
+                  },
+                  "estimationTime": {
+                    "type": "string",
+                    "example": "18h"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "bank"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "50000"
+                  }
+                }
+              },
+              "examples": {
+                "update shipping service": {
+                  "value": {
+                    "description": "this is bank payment",
+                    "estimationTime": "18h",
+                    "name": "bank",
+                    "price": "50000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/shipping-services/5fd40e23-1bfc-4499-aaab-8e9b03b77587": {
+      "delete": {
+        "tags": ["shipping services"],
+        "summary": "delete shipping service by id",
+        "description": "delete shipping service by id",
+        "operationId": "deleteShippingServiceById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete shipping service by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/payment-methods": {
+      "get": {
+        "tags": ["payment methods"],
+        "summary": "get payment methods",
+        "description": "get payment methods",
+        "operationId": "getPaymentMethods",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["payment methods"],
+        "summary": "add payment method",
+        "description": "add payment method",
+        "operationId": "addPaymentMethod",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "example": "{{$randomLoremParagraph}}"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomWord}}"
+                  }
+                }
+              },
+              "examples": {
+                "add payment method": {
+                  "value": {
+                    "description": "{{$randomLoremParagraph}}",
+                    "name": "{{$randomWord}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/payment-methods/3af6af84-5ade-4563-a0ec-2e333e9dcbf7": {
+      "get": {
+        "tags": ["payment methods"],
+        "summary": "get payment method by id",
+        "description": "get payment method by id",
+        "operationId": "getPaymentMethodById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/payment-methods/f2432029-aaad-4383-9131-027c5433b151": {
+      "delete": {
+        "tags": ["payment methods"],
+        "summary": "delete payment method by id",
+        "description": "delete payment method by id",
+        "operationId": "deletePaymentMethodById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete payment method by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["payment methods"],
+        "summary": "update payment method",
+        "description": "update payment method",
+        "operationId": "updatePaymentMethod",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "price": {
+                    "type": "string",
+                    "example": "{{$randomPrice}}"
+                  }
+                }
+              },
+              "examples": {
+                "update payment method": {
+                  "value": {
+                    "price": "{{$randomPrice}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/genres": {
+      "get": {
+        "tags": ["genres"],
+        "summary": "get genres",
+        "description": "get genres",
+        "operationId": "getGenres",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["genres"],
+        "summary": "add genre",
+        "description": "add genre",
+        "operationId": "addGenre",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "example": "{{$randomLoremParagraph}}"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomWord}}"
+                  }
+                }
+              },
+              "examples": {
+                "add genre": {
+                  "value": {
+                    "description": "{{$randomLoremParagraph}}",
+                    "name": "{{$randomWord}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/genres/98dbaa3a-e975-4d96-8819-2067d093e4af": {
+      "get": {
+        "tags": ["genres"],
+        "summary": "get genre by id",
+        "description": "get genre by id",
+        "operationId": "getGenreById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["genres"],
+        "summary": "delete genre by id",
+        "description": "delete genre by id",
+        "operationId": "deleteGenreById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete genre by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["genres"],
+        "summary": "update genre",
+        "description": "update genre",
+        "operationId": "updateGenre",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "example": "{{$randomJobDescriptor}}"
+                  }
+                }
+              },
+              "examples": {
+                "update genre": {
+                  "value": {
+                    "description": "{{$randomJobDescriptor}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/authors": {
+      "get": {
+        "tags": ["authors"],
+        "summary": "get authors",
+        "description": "get authors",
+        "operationId": "getAuthors",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["authors"],
+        "summary": "add author",
+        "description": "add author",
+        "operationId": "addAuthor",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "biography": {
+                    "type": "string",
+                    "example": "{{$randomLoremParagraph}}"
+                  },
+                  "birthDate": {
+                    "type": "string",
+                    "example": "2023/09/11"
+                  },
+                  "deathDate": {
+                    "type": "string",
+                    "example": "2023/09/11"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomWord}}"
+                  }
+                }
+              },
+              "examples": {
+                "add author": {
+                  "value": {
+                    "biography": "{{$randomLoremParagraph}}",
+                    "birthDate": "2023/09/11",
+                    "deathDate": "2023/09/11",
+                    "name": "{{$randomWord}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
             "description": ""
           }
         }
@@ -367,2385 +917,1091 @@
     },
     "/authors/search": {
       "get": {
-        "description": "",
+        "tags": ["authors"],
+        "summary": "search authors",
+        "description": "search authors",
+        "operationId": "searchAuthors",
         "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "name",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "a"
             }
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/authors/{authorId}": {
+    "/authors/b22e3de7-9706-4e73-9787-d19136b4fc9b": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["authors"],
+        "summary": "get author by id",
+        "description": "get author by id",
+        "operationId": "getAuthorById",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/genres/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/genres/search": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/genres/{genreId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "genreId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "genreId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "genreId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/languages/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
+        "tags": ["authors"],
+        "summary": "delete author by id",
+        "description": "delete author by id",
+        "operationId": "deleteAuthorById",
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete author by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["authors"],
+        "summary": "update author",
+        "description": "update author",
+        "operationId": "updateAuthor",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "name": {
-                    "example": "any"
+                    "type": "string",
+                    "example": "{{$randomFirstName}}"
+                  }
+                }
+              },
+              "examples": {
+                "update author": {
+                  "value": {
+                    "name": "{{$randomFirstName}}"
                   }
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/languages/search": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/languages/{languageId}": {
+    "/publishers": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "languageId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["publishers"],
+        "summary": "get publishers",
+        "description": "get publishers",
+        "operationId": "getPublishers",
         "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "languageId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "languageId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/publishers/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
+        "tags": ["publishers"],
+        "summary": "add publisher",
+        "description": "add publisher",
+        "operationId": "addPublisher",
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
+                  "description": {
+                    "type": "string",
+                    "example": "{{$randomJobDescriptor}}"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "{{$randomEmail}}"
+                  },
                   "name": {
-                    "example": "any"
+                    "type": "string",
+                    "example": "{{$randomFirstName}}"
+                  },
+                  "website[0]": {
+                    "type": "string",
+                    "example": "{{$randomUrl}}"
+                  },
+                  "website[1]": {
+                    "type": "string",
+                    "example": "{{$randomUrl}}"
+                  }
+                }
+              },
+              "examples": {
+                "add publisher": {
+                  "value": {
+                    "description": "{{$randomJobDescriptor}}",
+                    "email": "{{$randomEmail}}",
+                    "name": "{{$randomFirstName}}",
+                    "website[0]": "{{$randomUrl}}",
+                    "website[1]": "{{$randomUrl}}"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
           }
         }
       }
     },
     "/publishers/search": {
       "get": {
-        "description": "",
+        "tags": ["publishers"],
+        "summary": "search publishers",
+        "description": "search publishers",
+        "operationId": "searchPublishers",
         "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "name",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "kae"
             }
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/publishers/{publisherId}": {
+    "/publishers/d6a9a7bc-4eac-4434-80fa-aab9a458a914": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "publisherId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["publishers"],
+        "summary": "get publisher by id",
+        "description": "get publisher by id",
+        "operationId": "getPublisherById",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "publisherId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["publishers"],
+        "summary": "delete publisher by id",
+        "description": "delete publisher by id",
+        "operationId": "deletePublisherById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete publisher by id": {
+                  "value": {}
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "publisherId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["publishers"],
+        "summary": "update publisher",
+        "description": "update publisher",
+        "operationId": "updatePublisher",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomFirstName}}"
+                  }
+                }
+              },
+              "examples": {
+                "update publisher": {
+                  "value": {
+                    "name": "{{$randomFirstName}}"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/books/": {
+    "/languages": {
       "get": {
-        "description": "",
+        "tags": ["languages"],
+        "summary": "get languages",
+        "description": "get languages",
+        "operationId": "getLanguages",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["languages"],
+        "summary": "add language",
+        "description": "add language",
+        "operationId": "addLanguage",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "{{$randomCountryCode}}"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomLastName}}"
+                  }
+                }
+              },
+              "examples": {
+                "add language": {
+                  "value": {
+                    "code": "{{$randomCountryCode}}",
+                    "name": "{{$randomLastName}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/languages/search": {
+      "get": {
+        "tags": ["languages"],
+        "summary": "search languages",
+        "description": "search languages",
+        "operationId": "searchLanguages",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
+            "name": "name",
+            "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "e"
             }
-          },
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/languages/581a4d4a-cdb6-4b6a-8c9d-ae56de64155c": {
+      "get": {
+        "tags": ["languages"],
+        "summary": "get language by id",
+        "description": "get language by id",
+        "operationId": "getLanguageById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["languages"],
+        "summary": "delete language by id",
+        "description": "delete language by id",
+        "operationId": "deleteLanguageById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete language by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["languages"],
+        "summary": "update language",
+        "description": "update language",
+        "operationId": "updateLanguage",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "{{$randomFirstName}}"
+                  }
+                }
+              },
+              "examples": {
+                "update language": {
+                  "value": {
+                    "name": "{{$randomFirstName}}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/books": {
+      "get": {
+        "tags": ["books"],
+        "summary": "get books",
+        "description": "get books",
+        "operationId": "getBooks",
+        "parameters": [
           {
             "name": "page",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "1"
             }
           },
           {
             "name": "limit",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "2"
             }
           },
           {
-            "name": "status",
+            "name": "sellerId",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "3876a6b5"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "Purdy"
             }
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
+        "tags": ["books"],
+        "summary": "add book",
+        "description": "add book",
+        "operationId": "addBook",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "slug": {
-                    "example": "any"
+                  "authorId": {
+                    "type": "string",
+                    "example": "2a35fab3-ea64-4127-899e-6c1e2767e3f0"
+                  },
+                  "bookGenres": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "genreId": {
+                          "type": "string",
+                          "example": "42d8363b-110f-45bc-a657-bfaaa8fd754b"
+                        }
+                      }
+                    },
+                    "example": [
+                      {
+                        "genreId": "42d8363b-110f-45bc-a657-bfaaa8fd754b"
+                      },
+                      {
+                        "genreId": "6cd17265-c1fa-472c-9e64-23df3fc7b10f"
+                      },
+                      {
+                        "genreId": "6d17dfc8-5331-4333-82c1-280f36070ba0"
+                      }
+                    ]
+                  },
+                  "bookPictures": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "example": "https://i.pinimg.com/236x/fa/4f/0a/fa4f0a213c5c21cf1e59a34475286113.jpg"
+                        }
+                      }
+                    },
+                    "example": [
+                      {
+                        "url": "https://i.pinimg.com/236x/fa/4f/0a/fa4f0a213c5c21cf1e59a34475286113.jpg"
+                      },
+                      {
+                        "url": "https://i.pinimg.com/236x/25/c8/58/25c858b3fb070ad3bfcf422bd3f7bad0.jpg"
+                      },
+                      {
+                        "url": "https://i.pinimg.com/236x/31/e2/a1/31e2a17fc75dd7d332086446d8ebb40d.jpg"
+                      }
+                    ]
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "{{$randomLoremParagraph}}"
+                  },
+                  "fileUrl": {
+                    "type": "string",
+                    "example": "{{$randomUrl}}"
+                  },
+                  "languageId": {
+                    "type": "string",
+                    "example": "0ae6cd13-390a-4188-bd11-e601437db233"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "{{$randomPrice}}"
+                  },
+                  "publicationDate": {
+                    "type": "string",
+                    "example": "2024/12/06"
+                  },
+                  "publisherId": {
+                    "type": "string",
+                    "example": "8ec7ac2f-c479-4d1c-bc33-373bee8e0510"
+                  },
+                  "stock": {
+                    "type": "number",
+                    "example": 10
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "{{$randomLoremWords}}"
+                  }
+                }
+              },
+              "examples": {
+                "add book": {
+                  "value": {
+                    "authorId": "2a35fab3-ea64-4127-899e-6c1e2767e3f0",
+                    "bookGenres": [
+                      {
+                        "genreId": "42d8363b-110f-45bc-a657-bfaaa8fd754b"
+                      },
+                      {
+                        "genreId": "6cd17265-c1fa-472c-9e64-23df3fc7b10f"
+                      },
+                      {
+                        "genreId": "6d17dfc8-5331-4333-82c1-280f36070ba0"
+                      }
+                    ],
+                    "bookPictures": [
+                      {
+                        "url": "https://i.pinimg.com/236x/fa/4f/0a/fa4f0a213c5c21cf1e59a34475286113.jpg"
+                      },
+                      {
+                        "url": "https://i.pinimg.com/236x/25/c8/58/25c858b3fb070ad3bfcf422bd3f7bad0.jpg"
+                      },
+                      {
+                        "url": "https://i.pinimg.com/236x/31/e2/a1/31e2a17fc75dd7d332086446d8ebb40d.jpg"
+                      }
+                    ],
+                    "description": "{{$randomLoremParagraph}}",
+                    "fileUrl": "{{$randomUrl}}",
+                    "languageId": "0ae6cd13-390a-4188-bd11-e601437db233",
+                    "price": "{{$randomPrice}}",
+                    "publicationDate": "2024/12/06",
+                    "publisherId": "8ec7ac2f-c479-4d1c-bc33-373bee8e0510",
+                    "stock": 10,
+                    "title": "{{$randomLoremWords}}"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
           }
         }
       }
     },
     "/books/search": {
       "get": {
-        "description": "",
+        "tags": ["books"],
+        "summary": "search books",
+        "description": "search books",
+        "operationId": "searchBooks",
         "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "title",
             "in": "query",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "in": "query",
-            "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "cheese"
             }
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/books/{bookId}": {
+    "/books/a43b8462-528e-4c95-8477-bd435b500e38": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["books"],
+        "summary": "get book by id",
+        "description": "get book by id",
+        "operationId": "getBookById",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/books/63f839a0-18df-4755-a681-eedff93133c6": {
       "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["books"],
+        "summary": "delete book by id",
+        "description": "delete book by id",
+        "operationId": "deleteBookById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete book by id": {
+                  "value": {}
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "tags": ["books"],
+        "summary": "update book",
+        "description": "update book",
+        "operationId": "updateBook",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "bengong saja"
+                  }
+                }
+              },
+              "examples": {
+                "update book": {
+                  "value": {
+                    "title": "bengong saja"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/carts/": {
+    "/carts/user": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["carts"],
+        "summary": "get user cart",
+        "description": "get user cart",
+        "operationId": "getUserCart",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       },
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "tags": ["carts"],
+        "summary": "create cart",
+        "description": "create cart",
+        "operationId": "createCart",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     },
-    "/carts/checkout": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+    "/carts": {
+      "get": {
+        "tags": ["carts"],
+        "summary": "get carts",
+        "description": "get carts",
+        "operationId": "getCarts",
         "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
+        }
+      }
+    },
+    "/carts/51b3aa3c-ff63-4ec2-b86b-e9a6f4fc0031": {
+      "get": {
+        "tags": ["carts"],
+        "summary": "get cart id",
+        "description": "get cart id",
+        "operationId": "getCartId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/cart/cart-items/4": {
+      "delete": {
+        "tags": ["carts"],
+        "summary": "delete cart item",
+        "description": "delete cart item",
+        "operationId": "deleteCartItem",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cart_id": {
+                    "type": "string",
+                    "example": "1"
+                  },
+                  "gun_id": {
+                    "type": "string",
+                    "example": "4"
+                  },
+                  "quantity": {
+                    "type": "string",
+                    "example": "9"
+                  }
+                }
+              },
+              "examples": {
+                "delete cart item": {
+                  "value": {
+                    "cart_id": "1",
+                    "gun_id": "4",
+                    "quantity": "9"
+                  }
+                }
+              }
+            }
+          }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/cart-items/user": {
+      "get": {
+        "tags": ["cart items"],
+        "summary": "get user cart items",
+        "description": "get user cart items",
+        "operationId": "getUserCartItems",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["cart items"],
+        "summary": "create user cart item",
+        "description": "create user cart item",
+        "operationId": "createUserCartItem",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bookId": {
+                    "type": "string",
+                    "example": "aa999e3c-a847-4736-8a37-181b085ea958"
+                  },
+                  "quantity": {
+                    "type": "string",
+                    "example": "1"
+                  }
+                }
+              },
+              "examples": {
+                "create user cart item": {
+                  "value": {
+                    "bookId": "aa999e3c-a847-4736-8a37-181b085ea958",
+                    "quantity": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/cart-items/bc5c5d6a-7a23-4c04-b151-4be30ac7d0ea": {
+      "get": {
+        "tags": ["cart items"],
+        "summary": "get cart item by id",
+        "description": "get cart item by id",
+        "operationId": "getCartItemById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["cart items"],
+        "summary": "delete cart item by id",
+        "description": "delete cart item by id",
+        "operationId": "deleteCartItemById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete cart item by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["cart items"],
+        "summary": "update cart item",
+        "description": "update cart item",
+        "operationId": "updateCartItem",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "string",
+                    "example": "3"
+                  }
+                }
+              },
+              "examples": {
+                "update cart item": {
+                  "value": {
+                    "quantity": "3"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["orders"],
+        "summary": "get orders",
+        "description": "get orders",
+        "operationId": "getOrders",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["orders"],
+        "summary": "create order",
+        "description": "create order",
+        "operationId": "createOrder",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
+                  "bookId": {
+                    "type": "string",
+                    "example": "a73bde09-1f83-483f-8c66-a31b79f99ab1"
+                  },
                   "paymentMethodId": {
-                    "example": "any"
+                    "type": "string",
+                    "example": "3af6af84-5ade-4563-a0ec-2e333e9dcbf7"
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "example": 2
+                  },
+                  "shippingServiceId": {
+                    "type": "string",
+                    "example": "1767a604-8905-484b-9691-cff17c2991b2"
+                  }
+                }
+              },
+              "examples": {
+                "create order": {
+                  "value": {
+                    "bookId": "a73bde09-1f83-483f-8c66-a31b79f99ab1",
+                    "paymentMethodId": "3af6af84-5ade-4563-a0ec-2e333e9dcbf7",
+                    "quantity": 2,
+                    "shippingServiceId": "1767a604-8905-484b-9691-cff17c2991b2"
                   }
                 }
               }
             }
           }
-        }
-      }
-    },
-    "/carts/{cartId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "cartId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "cartId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/orders/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "shippingStatus",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "priceRange",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/orders/user": {
+      "get": {
+        "tags": ["orders"],
+        "summary": "get user order",
+        "description": "get user order",
+        "operationId": "getUserOrder",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/orders/51b3aa3c-ff63-4ec2-b86b-e9a6f4fc0031": {
+      "get": {
+        "tags": ["orders"],
+        "summary": "get order id",
+        "description": "get order id",
+        "operationId": "getOrderId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/order/order-items/4": {
+      "delete": {
+        "tags": ["orders"],
+        "summary": "delete order item",
+        "description": "delete order item",
+        "operationId": "deleteOrderItem",
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "paymentMethodId": {
-                    "example": "any"
+                  "gun_id": {
+                    "type": "string",
+                    "example": "4"
+                  },
+                  "order_id": {
+                    "type": "string",
+                    "example": "1"
+                  },
+                  "quantity": {
+                    "type": "string",
+                    "example": "9"
+                  }
+                }
+              },
+              "examples": {
+                "delete order item": {
+                  "value": {
+                    "gun_id": "4",
+                    "order_id": "1",
+                    "quantity": "9"
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/orders/{orderId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/transactions/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/transactions/{transactionId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "transactionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "transactionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "transactionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/cart-items/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/cart-items/{cartItemId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "cartItemId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "cartItemId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "cartItemId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/bookPictures/": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/bookPictures/{bookPictureId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookPictureId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookPictureId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/bookReviews/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "rating",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/bookReviews/{bookReviewId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookReviewId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookReviewId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "bookReviewId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/author-follows/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "birthDateRange",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "deathDateRange",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/author-follows/{authorId}": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/genre-follows/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/genre-follows/{genreId}": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "genreId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "genreId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/publisher-follows/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/publisher-follows/{publisherId}": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "publisherId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "publisherId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/user-follows/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "role",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "isVerified",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/user-follows/{userId}": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/user-prefered-languages/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/user-prefered-languages/{userId}": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/payment-methods/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
           }
         },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "example": "any"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/payment-methods/search": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/payment-methods/{paymentMethodId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "paymentMethodId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "paymentMethodId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "paymentMethodId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/shipping-services/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "example": "any"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/shipping-services/search": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/shipping-services/{shippingServiceId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "shippingServiceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "shippingServiceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "shippingServiceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/user-addresses/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/user-addresses/{userAddressId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userAddressId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userAddressId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userAddressId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
+          "200": {
             "description": ""
           }
         }
       }
     }
-  }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth"
+    },
+    {
+      "name": "users"
+    },
+    {
+      "name": "shipping services"
+    },
+    {
+      "name": "payment methods"
+    },
+    {
+      "name": "genres"
+    },
+    {
+      "name": "authors"
+    },
+    {
+      "name": "publishers"
+    },
+    {
+      "name": "languages"
+    },
+    {
+      "name": "books"
+    },
+    {
+      "name": "carts"
+    },
+    {
+      "name": "cart items"
+    },
+    {
+      "name": "orders"
+    }
+  ]
 }

@@ -8,6 +8,7 @@ import {
   deleteOrderById,
   getOrderById,
   getOrders,
+  getUserOrders,
   updateOrderById,
 } from "./order.handlers";
 // import { createOrderSchema } from "./order.validations";
@@ -18,10 +19,15 @@ router
   .route("/")
   .post(authMiddleware(), createOrder)
   .get(authMiddleware(), getOrders);
+router.route("/user").get(authMiddleware(), getUserOrders);
 router
   .route("/:orderId")
   .get(getOrderById)
-  .patch(authMiddleware(), updateOrderById)
-  .delete(authMiddleware(), deleteOrderById);
+  .patch(authMiddleware(), roleValidationMiddleware(["ADMIN"]), updateOrderById)
+  .delete(
+    authMiddleware(),
+    roleValidationMiddleware(["ADMIN"]),
+    deleteOrderById,
+  );
 
 export default router;

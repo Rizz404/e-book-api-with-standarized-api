@@ -48,7 +48,6 @@ export const getOrders: RequestHandler = async (req, res) => {
     const {
       page = "1",
       limit = "10",
-      userId,
       shippingStatus,
       priceRange,
     } = req.query as unknown & {
@@ -58,6 +57,50 @@ export const getOrders: RequestHandler = async (req, res) => {
       shippingStatus?: "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
       priceRange?: string;
     };
+
+    const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
+
+    const parsedPriceRangeFilter = priceRange
+      ? (() => {
+          const [start, end] = priceRange.split(",");
+          return { start, end };
+        })()
+      : undefined;
+
+    const { orders, totalItems } = await findOrdersByFiltersService(
+      limit,
+      offset,
+      { shippingStatus, priceRange: parsedPriceRangeFilter },
+    );
+
+    createSuccessResponse(
+      res,
+      createPaginatedResponse(orders, currentPage, itemsPerPage, totalItems),
+    );
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const getUserOrders: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const {
+      page = "1",
+      limit = "10",
+      shippingStatus,
+      priceRange,
+    } = req.query as unknown & {
+      page?: string;
+      limit?: string;
+      userId?: string;
+      shippingStatus?: "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+      priceRange?: string;
+    };
+
+    if (!userId) {
+      return createErrorResponse(res, "User id not found");
+    }
 
     const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
 
@@ -102,17 +145,6 @@ export const getOrderById: RequestHandler = async (req, res) => {
 // *==========*==========*==========PATCH==========*==========*==========*
 export const updateOrderById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
-
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
-    }
-
     const { orderId } = req.params;
     const orderData: InsertOrderDTO = req.body;
 
@@ -120,14 +152,6 @@ export const updateOrderById: RequestHandler = async (req, res) => {
 
     if (!existingOrder) {
       return createErrorResponse(res, "Order not found", 404);
-    }
-
-    if (role !== "ADMIN") {
-      return createErrorResponse(
-        res,
-        "You don't have permission to update this order",
-        404,
-      );
     }
 
     const updatedOrder = await updateOrderService(orderId, { ...orderData });
@@ -141,31 +165,12 @@ export const updateOrderById: RequestHandler = async (req, res) => {
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteOrderById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
-
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
-    }
-
     const { orderId } = req.params;
 
     const existingOrder = await findOrderByIdService(orderId);
 
     if (!existingOrder) {
       return createErrorResponse(res, "Order not found", 404);
-    }
-
-    if (role !== "ADMIN") {
-      return createErrorResponse(
-        res,
-        "You don't have permission to delete this order",
-        404,
-      );
     }
 
     const deletedOrder = await deleteOrderService(orderId);

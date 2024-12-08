@@ -1,10 +1,17 @@
-import { and, between, count, eq, SQL } from "drizzle-orm";
+import { and, between, count, eq, SQL, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
+import AuthorModel from "../authors/author.model";
+import BookGenreModel from "../book-genre/book-genre.model";
+import BookPictureModel from "../book-pictures/book-picture.model";
 import BookModel from "../books/book.model";
+import GenreModel from "../genres/genre.model";
+import LanguageModel from "../languages/language.model";
 import PaymentMethodModel from "../payment-methods/payment-method.model";
+import PublisherModel from "../publishers/publisher.model";
 import ShippingServiceModel from "../shipping-services/shipping-service.model";
 import TransactionModel from "../transactions/transaction.model";
+import UserModel from "../users/user.model";
 import OrderModel, { InsertOrderDTO, SelectOrderDTO } from "./order.model";
 
 export interface Filter {
@@ -12,6 +19,60 @@ export interface Filter {
   shippingStatus?: "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   priceRange?: { start: string; end: string };
 }
+
+// * Join inside join not fix
+const orderResponse = {
+  id: OrderModel.id,
+  userId: OrderModel.userId,
+  bookId: OrderModel.bookId,
+  shippingServiceId: OrderModel.shippingServiceId,
+  transactionId: OrderModel.transactionId,
+  quantity: OrderModel.quantity,
+  priceSold: OrderModel.priceSold,
+  totalPrice: OrderModel.totalPrice,
+  shippingStatus: OrderModel.shippingStatus,
+  user: {
+    id: UserModel.id,
+    username: UserModel.username,
+    email: UserModel.email,
+    profilePicture: UserModel.profilePicture,
+  },
+  book: {
+    id: BookModel.id,
+    title: BookModel.title,
+    // genres: sql`
+    //     json_agg(
+    //       json_build_object('id', ${GenreModel.id}, 'name', ${GenreModel.name})
+    //     )
+    //   `.as("genres"),
+    // bookPictures: sql`
+    //     json_agg(
+    //       json_build_object(
+    //         'id', ${BookPictureModel.id},
+    //         'url', ${BookPictureModel.url},
+    //         'isCover', ${BookPictureModel.isCover}
+    //       )
+    //     )
+    //   `.as("bookPictures"),
+    price: BookModel.price,
+    fileUrl: BookModel.fileUrl,
+    // seller: {
+    //   id: UserModel.id,
+    //   username: UserModel.username,
+    //   email: UserModel.email,
+    //   isVerified: UserModel.isVerified,
+    //   profilePicture: UserModel.profilePicture,
+    // },
+    // language: LanguageModel.name,
+  },
+  shippingService: {
+    id: ShippingServiceModel.id,
+    price: ShippingServiceModel.price,
+    estimationTime: ShippingServiceModel.estimationTime,
+  },
+  createdAt: OrderModel.createdAt,
+  updatedAt: OrderModel.updatedAt,
+};
 
 export const createOrderService = async (
   orderData: Pick<
@@ -151,9 +212,18 @@ export const findOrdersByFiltersService = async (
   )[0].count;
 
   const orders = await db
-    .select()
+    .select(orderResponse)
     .from(OrderModel)
+    .leftJoin(UserModel, eq(UserModel.id, OrderModel.userId))
     .leftJoin(BookModel, eq(BookModel.id, OrderModel.bookId))
+    // .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
+    // .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+    // .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
+    // .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
+    .leftJoin(
+      ShippingServiceModel,
+      eq(ShippingServiceModel.id, OrderModel.shippingServiceId),
+    )
     .where(filtersQuery)
     .limit(parseInt(limit))
     .offset(offset);
@@ -163,12 +233,23 @@ export const findOrdersByFiltersService = async (
 
 export const findOrderByIdService = async (orderId: string) => {
   return (
-    await db
-      .select()
-      .from(OrderModel)
-      .leftJoin(BookModel, eq(BookModel.id, OrderModel.bookId))
-      .where(eq(OrderModel.id, orderId))
-  )[0];
+    (
+      await db
+        .select(orderResponse)
+        .from(OrderModel)
+        .leftJoin(UserModel, eq(UserModel.id, OrderModel.userId))
+        .leftJoin(BookModel, eq(BookModel.id, OrderModel.bookId))
+        // .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
+        // .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+        // .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
+        // .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
+        .leftJoin(
+          ShippingServiceModel,
+          eq(ShippingServiceModel.id, OrderModel.shippingServiceId),
+        )
+        .where(eq(OrderModel.id, orderId))
+    )[0]
+  );
 };
 
 export const updateOrderService = async (
