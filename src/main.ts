@@ -13,11 +13,12 @@ import { Server } from "socket.io";
 import swaggerUi from "swagger-ui-express";
 
 import swaggerOutput from "../swagger.json";
-import { pool } from "./config/database-config";
-import limiter from "./config/limiter-config";
-import apiKeyMiddleware from "./middleware/api-key-middleware";
+import { pool } from "./config/database.config";
+import RATE_LIMITER_OPTION from "./constants/limiter.constants";
+import apiKeyMiddleware from "./middleware/api-key.middleware";
+import apiLimiterMiddleware from "./middleware/api-limiter.middleware";
 import routes from "./routes";
-import logger from "./utils/logger.util";
+import logger from "./utils/logger.utils";
 
 // * INIT
 const PORT = process.env.PORT || 5000;
@@ -48,7 +49,7 @@ app.get("/api", (req, res) => {
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use("/api", routes);
 
-app.use(limiter); // * Rate limiting setelah routing
+app.use(apiLimiterMiddleware(RATE_LIMITER_OPTION.api)); // * Rate limiting setelah routing
 
 // * Global Error Handlers
 process.on("uncaughtException", (err) => {

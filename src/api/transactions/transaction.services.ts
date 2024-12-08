@@ -11,7 +11,7 @@ import {
   SQLWrapper,
 } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import LanguageModel from "../languages/language.model";
 import PublisherModel from "../publishers/publisher.model";
 import TransactionModel, {

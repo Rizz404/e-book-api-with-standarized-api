@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq, or } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import LanguageModel from "./language.model";
 
 const seedLanguages = async () => {

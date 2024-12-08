@@ -1,8 +1,8 @@
 import express from "express";
 
-import { authMiddleware } from "../../middleware/auth-middleware";
-import roleValidationMiddleware from "../../middleware/role-validation-middleware";
-import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
+import { authMiddleware } from "../../middleware/auth.middleware";
+import roleValidationMiddleware from "../../middleware/role-validation.middleware";
+import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
 import {
   createAuthor,
   deleteAuthorById,

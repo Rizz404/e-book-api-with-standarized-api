@@ -1,11 +1,11 @@
 import { Column, count, desc, eq, ilike, SQL, SQLWrapper } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import CartModel, { InsertCartDTO, SelectCartDTO } from "../cart/cart.model";
-import { SelectCartItemDTO } from "../cart-items/cart.item.model";
+import { SelectCartItemDTO } from "../cart-items/cart-item.model";
 import OrderModel from "../orders/order.model";
-import PaymentMethodModel from "../payment-methods/payment.method.model";
-import ShippingServiceModel from "../shipping-services/shipping.service.model";
+import PaymentMethodModel from "../payment-methods/payment-method.model";
+import ShippingServiceModel from "../shipping-services/shipping-service.model";
 import TransactionModel from "../transactions/transaction.model";
 import UserModel from "../users/user.model";
 

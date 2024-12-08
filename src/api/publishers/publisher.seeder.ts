@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import PublisherModel from "./publisher.model";
 
 const seedPublishers = async () => {

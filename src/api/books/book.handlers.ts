@@ -1,20 +1,20 @@
 import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
 
-import { parsePagination } from "../../utils/api.request.utils";
+import { parsePagination } from "../../utils/api-request.utils";
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
-} from "../../utils/api.response.utils";
+} from "../../utils/api-response.utils";
 import { addFilters } from "../../utils/query.utils";
-import { InsertBookGenreDTO } from "../book-genre/book.genre.model";
-import { createBookGenresService } from "../book-genre/book.genre.services";
+import { InsertBookGenreDTO } from "../book-genre/book-genre.model";
+import { createBookGenresService } from "../book-genre/book-genre.services";
 import {
   InsertBookPictureDTO,
   SelectBookPictureDTO,
-} from "../book-pictures/book.picture.model";
-import { createBookPicturesService } from "../book-pictures/book.picture.services";
+} from "../book-pictures/book-picture.model";
+import { createBookPicturesService } from "../book-pictures/book-picture.services";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "./book.model";
 import {
   createBookService,

@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcrypt";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import UserModel from "./user.model";
 
 const seedUsers = async () => {

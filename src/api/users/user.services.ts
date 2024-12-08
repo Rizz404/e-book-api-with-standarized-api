@@ -10,8 +10,8 @@ import {
   SQLWrapper,
 } from "drizzle-orm";
 
-import db from "../../config/database-config";
-import UserProfileModel from "../user-profile/user.profile.model";
+import db from "../../config/database.config";
+import UserProfileModel from "../user-profile/user-profile.model";
 import UserModel, { InsertUserDTO, SelectUserDTO } from "./user.model";
 
 export const userResponse = {

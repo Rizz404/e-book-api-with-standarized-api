@@ -1,8 +1,8 @@
 import express from "express";
-import rateLimit from "express-rate-limit";
 
-import RATE_LIMITER_OPTION from "../../constants/limiter-constants";
-import schemaValidatorMiddleware from "../../middleware/schema-validator-middleware";
+import RATE_LIMITER_OPTION from "../../constants/limiter.constants";
+import apiLimiterMiddleware from "../../middleware/api-limiter.middleware";
+import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
 import {
   refreshExpiredToken,
   signIn,
@@ -15,13 +15,13 @@ const router = express.Router();
 
 router.post(
   "/sign-up",
-  rateLimit(RATE_LIMITER_OPTION.signUp),
+  apiLimiterMiddleware(RATE_LIMITER_OPTION.signUp),
   schemaValidatorMiddleware(signUpSchema),
   signUp,
 );
 router.post(
   "/sign-in",
-  rateLimit(RATE_LIMITER_OPTION.signIn),
+  apiLimiterMiddleware(RATE_LIMITER_OPTION.signIn),
   schemaValidatorMiddleware(signInSchema),
   signIn,
 );

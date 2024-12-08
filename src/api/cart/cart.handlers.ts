@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
 
-import { parsePagination } from "../../utils/api.request.utils";
+import { parsePagination } from "../../utils/api-request.utils";
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
-} from "../../utils/api.response.utils";
-import { SelectCartItemDTO } from "../cart-items/cart.item.model";
+} from "../../utils/api-response.utils";
+import { SelectCartItemDTO } from "../cart-items/cart-item.model";
 import { InsertCartDTO, SelectCartDTO } from "./cart.model";
 import {
   cartCheckoutService,

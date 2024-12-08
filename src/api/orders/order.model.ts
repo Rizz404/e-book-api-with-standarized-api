@@ -4,7 +4,7 @@ import { decimal, integer, pgEnum, timestamp, uuid } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core";
 
 import BookModel from "../books/book.model";
-import ShippingServiceModel from "../shipping-services/shipping.service.model";
+import ShippingServiceModel from "../shipping-services/shipping-service.model";
 import TransactionModel from "../transactions/transaction.model";
 import UserModel from "../users/user.model";
 

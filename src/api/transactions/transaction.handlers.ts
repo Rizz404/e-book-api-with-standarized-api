@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
 
-import { parsePagination } from "../../utils/api.request.utils";
+import { parsePagination } from "../../utils/api-request.utils";
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
-} from "../../utils/api.response.utils";
+} from "../../utils/api-response.utils";
 import { addFilters } from "../../utils/query.utils";
 import TransactionModel, {
   InsertTransactionDTO,

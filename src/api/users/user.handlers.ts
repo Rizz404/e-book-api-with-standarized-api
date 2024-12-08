@@ -1,19 +1,19 @@
 import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
 
-import { parsePagination } from "../../utils/api.request.utils";
+import { parsePagination } from "../../utils/api-request.utils";
 import {
   createErrorResponse,
   createPaginatedResponse,
   createSuccessResponse,
-} from "../../utils/api.response.utils";
+} from "../../utils/api-response.utils";
 import { addFilters } from "../../utils/query.utils";
-import { InsertUserProfileDTO } from "../user-profile/user.profile.model";
+import { InsertUserProfileDTO } from "../user-profile/user-profile.model";
 import {
   createUserProfileService,
   findUserProfileByUserIdService,
   updateUserProfileService,
-} from "../user-profile/user.profile.services";
+} from "../user-profile/user-profile.services";
 import UserModel, { InsertUserDTO, SelectUserDTO } from "./user.model";
 import {
   createUserService,

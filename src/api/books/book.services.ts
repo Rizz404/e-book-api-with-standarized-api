@@ -13,10 +13,10 @@ import {
   SQLWrapper,
 } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import AuthorModel from "../authors/author.model";
-import BookGenreModel from "../book-genre/book.genre.model";
-import BookPictureModel from "../book-pictures/book.picture.model";
+import BookGenreModel from "../book-genre/book-genre.model";
+import BookPictureModel from "../book-pictures/book-picture.model";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "../books/book.model";
 import GenreModel from "../genres/genre.model";
 import LanguageModel from "../languages/language.model";

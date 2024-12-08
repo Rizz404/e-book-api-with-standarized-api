@@ -9,7 +9,7 @@ import {
   SQLWrapper,
 } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import AuthorModel, { InsertAuthorDTO, SelectAuthorDTO } from "./author.model";
 
 export const createAuthorService = async (authorData: InsertAuthorDTO) => {

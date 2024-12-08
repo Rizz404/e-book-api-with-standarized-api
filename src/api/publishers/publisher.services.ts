@@ -9,7 +9,7 @@ import {
   SQLWrapper,
 } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import PublisherModel, {
   InsertPublisherDTO,
   SelectPublisherDTO,

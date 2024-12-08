@@ -1,9 +1,9 @@
 import { and, between, count, eq, SQL } from "drizzle-orm";
 
-import db from "../../config/database-config";
+import db from "../../config/database.config";
 import BookModel from "../books/book.model";
-import PaymentMethodModel from "../payment-methods/payment.method.model";
-import ShippingServiceModel from "../shipping-services/shipping.service.model";
+import PaymentMethodModel from "../payment-methods/payment-method.model";
+import ShippingServiceModel from "../shipping-services/shipping-service.model";
 import TransactionModel from "../transactions/transaction.model";
 import OrderModel, { InsertOrderDTO, SelectOrderDTO } from "./order.model";
 

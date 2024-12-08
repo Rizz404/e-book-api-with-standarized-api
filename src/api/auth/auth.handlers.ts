@@ -1,13 +1,13 @@
 import { RequestHandler } from "express";
 import { SendMailOptions } from "nodemailer";
 
-import { createConfirmationEmailResponse } from "../../config/mailgen-config";
-import transporter from "../../config/nodemailer-transporter-config";
+import transporter from "../../config/nodemailer.config";
 import {
   createErrorResponse,
   createSuccessResponse,
-} from "../../utils/api.response.utils";
-import { createUserProfileService } from "../user-profile/user.profile.services";
+} from "../../utils/api-response.utils";
+import { signUpEmailResponse } from "../../utils/email-generator.utils";
+import { createUserProfileService } from "../user-profile/user-profile.services";
 import { InsertUserDTO, SelectUserDTO } from "../users/user.model";
 import {
   createUserService,
@@ -49,7 +49,7 @@ export const signUp: RequestHandler = async (req, res) => {
       from: process.env.GMAIL_APP_USER,
       to: newUser.email,
       subject: "Semakin hari semakin dibelakang",
-      html: createConfirmationEmailResponse(username, redirectLink),
+      html: signUpEmailResponse(username, redirectLink),
     };
 
     const emailSent = await transporter.sendMail(message);
