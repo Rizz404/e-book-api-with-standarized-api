@@ -612,6 +612,21 @@
         "summary": "get payment methods",
         "description": "get payment methods",
         "operationId": "getPaymentMethods",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "get payment methods": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -636,6 +651,10 @@
                   "name": {
                     "type": "string",
                     "example": "{{$randomWord}}"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "{{$randomPrice}}"
                   }
                 }
               },
@@ -643,7 +662,8 @@
                 "add payment method": {
                   "value": {
                     "description": "{{$randomLoremParagraph}}",
-                    "name": "{{$randomWord}}"
+                    "name": "{{$randomWord}}",
+                    "price": "{{$randomPrice}}"
                   }
                 }
               }
@@ -1626,6 +1646,101 @@
         }
       }
     },
+    "/carts/user/checkout": {
+      "post": {
+        "tags": ["carts"],
+        "summary": "cart user checkout",
+        "description": "cart user checkout",
+        "operationId": "cartUserCheckout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cartCheckoutData": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "cartItemId": {
+                          "type": "string",
+                          "example": "00146c12-f14d-4560-a806-4073bfbe9571"
+                        },
+                        "shippingServiceId": {
+                          "type": "string",
+                          "example": "3588c8db-9660-4d96-aa0d-2f4ac0a91b5f"
+                        }
+                      }
+                    },
+                    "example": [
+                      {
+                        "cartItemId": "00146c12-f14d-4560-a806-4073bfbe9571",
+                        "shippingServiceId": "3588c8db-9660-4d96-aa0d-2f4ac0a91b5f"
+                      },
+                      {
+                        "cartItemId": "0aab0b3d-9e45-456c-bf82-b66b22ac7a24",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      },
+                      {
+                        "cartItemId": "5d8c4f47-702e-49aa-ba7a-4eb12b94dbcd",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      },
+                      {
+                        "cartItemId": "7f599a04-bf30-45cb-9b3b-79111d0e7453",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      },
+                      {
+                        "cartItemId": "e9a60d43-c179-4329-a960-0fb6865535b1",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      }
+                    ]
+                  },
+                  "paymentMethodId": {
+                    "type": "string",
+                    "example": "b5e72fb6-b901-4da5-b1cb-68388b071eb7"
+                  }
+                }
+              },
+              "examples": {
+                "cart user checkout": {
+                  "value": {
+                    "cartCheckoutData": [
+                      {
+                        "cartItemId": "00146c12-f14d-4560-a806-4073bfbe9571",
+                        "shippingServiceId": "3588c8db-9660-4d96-aa0d-2f4ac0a91b5f"
+                      },
+                      {
+                        "cartItemId": "0aab0b3d-9e45-456c-bf82-b66b22ac7a24",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      },
+                      {
+                        "cartItemId": "5d8c4f47-702e-49aa-ba7a-4eb12b94dbcd",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      },
+                      {
+                        "cartItemId": "7f599a04-bf30-45cb-9b3b-79111d0e7453",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      },
+                      {
+                        "cartItemId": "e9a60d43-c179-4329-a960-0fb6865535b1",
+                        "shippingServiceId": "c8dd37d5-3539-4f7d-ad35-3b3ef6eb3326"
+                      }
+                    ],
+                    "paymentMethodId": "b5e72fb6-b901-4da5-b1cb-68388b071eb7"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/carts": {
       "get": {
         "tags": ["carts"],
@@ -1722,19 +1837,19 @@
                 "properties": {
                   "bookId": {
                     "type": "string",
-                    "example": "aa999e3c-a847-4736-8a37-181b085ea958"
+                    "example": "401b51aa-fd59-454d-964c-c4b919430a8c"
                   },
                   "quantity": {
                     "type": "string",
-                    "example": "1"
+                    "example": "4"
                   }
                 }
               },
               "examples": {
                 "create user cart item": {
                   "value": {
-                    "bookId": "aa999e3c-a847-4736-8a37-181b085ea958",
-                    "quantity": "1"
+                    "bookId": "401b51aa-fd59-454d-964c-c4b919430a8c",
+                    "quantity": "4"
                   }
                 }
               }
@@ -1853,7 +1968,7 @@
                   },
                   "quantity": {
                     "type": "number",
-                    "example": 2
+                    "example": 1
                   },
                   "shippingServiceId": {
                     "type": "string",
@@ -1866,7 +1981,7 @@
                   "value": {
                     "bookId": "a73bde09-1f83-483f-8c66-a31b79f99ab1",
                     "paymentMethodId": "3af6af84-5ade-4563-a0ec-2e333e9dcbf7",
-                    "quantity": 2,
+                    "quantity": 1,
                     "shippingServiceId": "1767a604-8905-484b-9691-cff17c2991b2"
                   }
                 }
@@ -1894,12 +2009,23 @@
         }
       }
     },
-    "/orders/51b3aa3c-ff63-4ec2-b86b-e9a6f4fc0031": {
+    "/orders/17ebb3a3-bc1f-4bef-a0d2-b3bd39850f50": {
       "get": {
         "tags": ["orders"],
         "summary": "get order id",
         "description": "get order id",
         "operationId": "getOrderId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["orders"],
+        "summary": "update order by id",
+        "description": "update order by id",
+        "operationId": "updateOrderById",
         "responses": {
           "200": {
             "description": ""
@@ -1945,6 +2071,404 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "tags": ["transaction"],
+        "summary": "get transactions",
+        "description": "get transactions",
+        "operationId": "getTransactions",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "2"
+            }
+          },
+          {
+            "name": "sellerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "3876a6b5"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "Purdy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/transactions/4ca909b9-9ee2-49e2-9e47-c268d15d068b": {
+      "get": {
+        "tags": ["transaction"],
+        "summary": "get transaction by id",
+        "description": "get transaction by id",
+        "operationId": "getTransactionById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": ["transaction"],
+        "summary": "update transaction",
+        "description": "update transaction",
+        "operationId": "updateTransaction",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "FAILED"
+                  }
+                }
+              },
+              "examples": {
+                "update transaction": {
+                  "value": {
+                    "status": "FAILED"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/transactions/63f839a0-18df-4755-a681-eedff93133c6": {
+      "delete": {
+        "tags": ["transaction"],
+        "summary": "delete transaction by id",
+        "description": "delete transaction by id",
+        "operationId": "deleteTransactionById",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "delete transaction by id": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user-addresses": {
+      "get": {
+        "tags": ["user addresses"],
+        "summary": "get user addresses",
+        "description": "get user addresses",
+        "operationId": "getUserAddresses",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["user addresses"],
+        "summary": "create user address",
+        "description": "create user address",
+        "operationId": "createUserAddress",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "coordinate": {
+                    "type": "string",
+                    "example": "{{$randomMACAddress}}"
+                  },
+                  "detailAddress": {
+                    "type": "string",
+                    "example": "{{$randomStreetAddress}}"
+                  },
+                  "isPrimaryAddress": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              },
+              "examples": {
+                "create user address": {
+                  "value": {
+                    "coordinate": "{{$randomMACAddress}}",
+                    "detailAddress": "{{$randomStreetAddress}}",
+                    "isPrimaryAddress": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user-addresses/6f217c0e-4592-4ceb-9bc4-e6f395842c5c": {
+      "get": {
+        "tags": ["user addresses"],
+        "summary": "get user address id",
+        "description": "get user address id",
+        "operationId": "getUserAddressId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["user addresses"],
+        "summary": "delete user address item",
+        "description": "delete user address item",
+        "operationId": "deleteUserAddressItem",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "gun_id": {
+                    "type": "string",
+                    "example": "4"
+                  },
+                  "quantity": {
+                    "type": "string",
+                    "example": "9"
+                  },
+                  "user address_id": {
+                    "type": "string",
+                    "example": "1"
+                  }
+                }
+              },
+              "examples": {
+                "delete user address item": {
+                  "value": {
+                    "gun_id": "4",
+                    "quantity": "9",
+                    "user address_id": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user-addresses/873d2aa2-72d8-4148-8fe7-bab390eb2706": {
+      "patch": {
+        "tags": ["user addresses"],
+        "summary": "update user address by id",
+        "description": "update user address by id",
+        "operationId": "updateUserAddressById",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "coordinate": {
+                    "type": "string",
+                    "example": "{{$randomMACAddress}}"
+                  },
+                  "detailAddress": {
+                    "type": "string",
+                    "example": "{{$randomStreetAddress}}"
+                  },
+                  "isPrimaryAddress": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              },
+              "examples": {
+                "update user address by id": {
+                  "value": {
+                    "coordinate": "{{$randomMACAddress}}",
+                    "detailAddress": "{{$randomStreetAddress}}",
+                    "isPrimaryAddress": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/author-follows/2a35fab3-ea64-4127-899e-6c1e2767e3f0": {
+      "post": {
+        "tags": ["author follows"],
+        "summary": "follow author",
+        "description": "follow author",
+        "operationId": "followAuthor",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["author follows"],
+        "summary": "unfollow author",
+        "description": "unfollow author",
+        "operationId": "unfollowAuthor",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/genre-follows/42d8363b-110f-45bc-a657-bfaaa8fd754b": {
+      "post": {
+        "tags": ["genre follows"],
+        "summary": "follow genre",
+        "description": "follow genre",
+        "operationId": "followGenre",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["genre follows"],
+        "summary": "unfollow genre",
+        "description": "unfollow genre",
+        "operationId": "unfollowGenre",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/publisher-follows/8ec7ac2f-c479-4d1c-bc33-373bee8e0510": {
+      "post": {
+        "tags": ["publisher follows"],
+        "summary": "follow publisher",
+        "description": "follow publisher",
+        "operationId": "followPublisher",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["publisher follows"],
+        "summary": "unfollow publisher",
+        "description": "unfollow publisher",
+        "operationId": "unfollowPublisher",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user-follows/bb83a172-f2c3-4c90-ab80-9aa977ea6cde": {
+      "post": {
+        "tags": ["user follows"],
+        "summary": "follow user",
+        "description": "follow user",
+        "operationId": "followUser",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["user follows"],
+        "summary": "unfollow user",
+        "description": "unfollow user",
+        "operationId": "unfollowUser",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user-prefered-languages/0ae6cd13-390a-4188-bd11-e601437db233": {
+      "post": {
+        "tags": ["user prefered languages"],
+        "summary": "add language",
+        "description": "add language",
+        "operationId": "addLanguage1",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["user prefered languages"],
+        "summary": "remove language",
+        "description": "remove language",
+        "operationId": "removeLanguage",
         "responses": {
           "200": {
             "description": ""
@@ -2002,6 +2526,27 @@
     },
     {
       "name": "orders"
+    },
+    {
+      "name": "transaction"
+    },
+    {
+      "name": "user addresses"
+    },
+    {
+      "name": "author follows"
+    },
+    {
+      "name": "genre follows"
+    },
+    {
+      "name": "publisher follows"
+    },
+    {
+      "name": "user follows"
+    },
+    {
+      "name": "user prefered languages"
     }
   ]
 }
