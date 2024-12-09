@@ -16,6 +16,7 @@ import {
   findCartByColumnService,
   findCartByIdService,
   findCartsByFiltersService,
+  ICartCheckoutServiceParams,
 } from "./cart.services";
 
 // *==========*==========*==========POST==========*==========*==========*
@@ -49,9 +50,16 @@ export const createCart: RequestHandler = async (req, res) => {
 export const cartUserCheckout: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const cartData: (SelectCartItemDTO & { shippingServiceId: string })[] & {
+    const {
+      cartCheckoutData,
+      paymentMethodId,
+    }: {
+      cartCheckoutData: ICartCheckoutServiceParams[];
       paymentMethodId: string;
     } = req.body;
+
+    console.log(`Cart checkout body${cartCheckoutData}`);
+    console.log(`Payment method id body${paymentMethodId}`);
 
     if (!userId) {
       return createErrorResponse(
@@ -63,8 +71,8 @@ export const cartUserCheckout: RequestHandler = async (req, res) => {
 
     const newCart = await cartCheckoutService(
       userId,
-      cartData,
-      cartData.paymentMethodId,
+      cartCheckoutData,
+      paymentMethodId,
     );
 
     createSuccessResponse(res, newCart, "Cart checkout successfully", 201);

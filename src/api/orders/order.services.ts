@@ -1,4 +1,4 @@
-import { and, between, count, eq, SQL, sql } from "drizzle-orm";
+import { and, between, count, desc, eq, SQL, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
 import AuthorModel from "../authors/author.model";
@@ -84,7 +84,6 @@ export const createOrderService = async (
   const { userId, bookId, quantity, shippingServiceId } = orderData;
 
   return await db.transaction(async (tx) => {
-    // Ambil data buku
     const [book] = await tx
       .select()
       .from(BookModel)
@@ -169,6 +168,11 @@ export const createOrderService = async (
       throw new Error("Failed to create order.");
     }
 
+    await tx
+      .update(BookModel)
+      .set({ stock: book.stock - orderData.quantity })
+      .where(eq(BookModel.id, book.id));
+
     return createOrder;
   });
 };
@@ -225,6 +229,7 @@ export const findOrdersByFiltersService = async (
       eq(ShippingServiceModel.id, OrderModel.shippingServiceId),
     )
     .where(filtersQuery)
+    .orderBy(desc(OrderModel.createdAt))
     .limit(parseInt(limit))
     .offset(offset);
 

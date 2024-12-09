@@ -86,7 +86,6 @@ export const updateTransactionService = async (
   transactionData: Partial<InsertTransactionDTO>,
 ) => {
   const { status } = transactionData;
-  let newSlug: string | undefined;
 
   const updateData = {
     ...(status !== undefined && { status }),
