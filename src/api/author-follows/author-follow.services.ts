@@ -6,6 +6,22 @@ import AuthorFollowModel, {
   InsertAuthorFollowDTO,
 } from "./author-follow.model";
 
+interface IFilters {
+  deathDateRange?: { start: string; end: string }; // * Range deathDate
+  birthDateRange?: { start: string; end: string }; // * Range birthDate
+}
+
+const authorResponse = {
+  id: AuthorModel.id,
+  name: AuthorModel.name,
+  biography: AuthorModel.biography,
+  birthDate: AuthorModel.birthDate,
+  deathDate: AuthorModel.deathDate,
+  profilePicture: AuthorModel.profilePicture,
+  createdAt: AuthorModel.createdAt,
+  updatedAt: AuthorModel.updatedAt,
+};
+
 export const followAuthorService = async (
   authorFollowData: InsertAuthorFollowDTO,
 ) => {
@@ -18,49 +34,43 @@ export const findAuthorsFollowedService = async (
   userId: string,
   limit: string,
   offset: number,
-  filters?: {
-    deathDateRange?: { start: string; end: string }; // * Range deathDate
-    birthDateRange?: { start: string; end: string }; // * Range birthDate
-  },
+  filters?: IFilters,
 ) => {
-  let filtersQuery = and(
-    eq(AuthorFollowModel.followedUserId, userId),
-    eq(AuthorModel.id, AuthorFollowModel.followingAuthorId),
-  );
+  const conditions: SQL<unknown>[] = [];
 
-  // * Tambahkan filter birthDate jika ada
-  if (filters && filters.birthDateRange) {
-    filtersQuery = and(
-      filtersQuery,
+  conditions.push(eq(AuthorFollowModel.followedUserId, userId));
+  conditions.push(eq(AuthorModel.id, AuthorFollowModel.followingAuthorId));
+
+  if (filters?.birthDateRange) {
+    conditions.push(
       sql`${AuthorModel.birthDate} >= ${filters.birthDateRange.start}`,
       sql`${AuthorModel.birthDate} <= ${filters.birthDateRange.end}`,
     );
   }
 
-  // * Tambahkan filter deathDate jika ada
-  if (filters && filters.deathDateRange) {
-    filtersQuery = and(
-      filtersQuery,
+  if (filters?.deathDateRange) {
+    conditions.push(
       sql`${AuthorModel.deathDate} >= ${filters.deathDateRange.start}`,
       sql`${AuthorModel.deathDate} <= ${filters.deathDateRange.end}`,
     );
   }
 
-  // * Query total item untuk pagination
-  const totalItemsQuery = await db
-    .select({ count: count() })
-    .from(AuthorModel)
-    .innerJoin(
-      AuthorFollowModel,
-      eq(AuthorModel.id, AuthorFollowModel.followingAuthorId),
-    )
-    .where(filtersQuery);
+  const filtersQuery = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const totalItems = totalItemsQuery[0]?.count || 0;
+  const totalItems =
+    (
+      await db
+        .select({ count: count() })
+        .from(AuthorModel)
+        .innerJoin(
+          AuthorFollowModel,
+          eq(AuthorModel.id, AuthorFollowModel.followingAuthorId),
+        )
+        .where(filtersQuery)
+    )[0].count || 0;
 
-  // * Query data authors
   const authors = await db
-    .select()
+    .select(authorResponse)
     .from(AuthorModel)
     .innerJoin(
       AuthorFollowModel,

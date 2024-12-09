@@ -114,6 +114,23 @@ export const getAuthorsFollowed: RequestHandler = async (req, res) => {
   }
 };
 
+export const getAuthorFollowByAuthorId: RequestHandler = async (req, res) => {
+  try {
+    const { id: userId } = req.user!;
+    const { authorId } = req.params;
+
+    const authorFollow = await findFollowedAuthorService(authorId, userId);
+
+    if (!authorFollow) {
+      return createErrorResponse(res, "Not follow this author", 404);
+    }
+
+    createSuccessResponse(res, authorFollow);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
 // *==========*==========*==========PATCH==========*==========*==========*
 
 // *==========*==========*==========DELETE==========*==========*==========*

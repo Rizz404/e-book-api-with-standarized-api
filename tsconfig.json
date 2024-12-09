@@ -24,6 +24,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "src/swagger-output.json"],
+  "include": ["src/**/*", "swagger.json"],
   "exclude": ["src/__tests__/**/*", "node_modules"]
 }

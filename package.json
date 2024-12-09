@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch .env --watch src/**/*.ts src/main.ts",
     "start": "node dist/main.js",
-    "build": "tsc",
+    "build": "tsc && cp -r src/views dist/views",
     "lint": "eslint --fix",
     "swagger:generate": "ts-node src/config/swagger-config.ts",
     "db:generate": "drizzle-kit generate",

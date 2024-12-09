@@ -5,6 +5,7 @@ import roleValidationMiddleware from "../../middleware/role-validation.middlewar
 import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
 import {
   followAuthorByAuthorId,
+  getAuthorFollowByAuthorId,
   getAuthorsFollowed,
   unFollowAuthorByAuthorId,
 } from "./author-follow.handlers";
@@ -15,6 +16,7 @@ const router = express.Router();
 router.route("/").get(authMiddleware(), getAuthorsFollowed);
 router
   .route("/:authorId")
+  .get(authMiddleware(), getAuthorFollowByAuthorId)
   .post(authMiddleware(), followAuthorByAuthorId)
   .delete(authMiddleware(), unFollowAuthorByAuthorId);
 
