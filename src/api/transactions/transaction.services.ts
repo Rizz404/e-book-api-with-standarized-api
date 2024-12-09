@@ -1,6 +1,8 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
+import BookModel from "../books/book.model";
+import OrderModel from "../orders/order.model";
 import TransactionModel, {
   InsertTransactionDTO,
   SelectTransactionDTO,
@@ -20,6 +22,12 @@ export const transactionResponse = {
   status: TransactionModel.status,
   createdAt: TransactionModel.createdAt,
   updatedAt: TransactionModel.updatedAt,
+  user: {
+    id: UserModel.id,
+    username: UserModel.username,
+    email: UserModel.email,
+    profilePicture: UserModel.profilePicture,
+  },
 };
 
 export const findTransactionsByFiltersService = async (
@@ -44,7 +52,7 @@ export const findTransactionsByFiltersService = async (
   const totalItems = totalItemsQuery[0]?.count || 0;
 
   const transactions = await db
-    .select()
+    .select(transactionResponse)
     .from(TransactionModel)
     .leftJoin(UserModel, eq(TransactionModel.userId, UserModel.id))
     .where(filtersQuery)
@@ -58,7 +66,7 @@ export const findTransactionsByFiltersService = async (
 export const findTransactionByIdService = async (id: string) => {
   return (
     await db
-      .select()
+      .select(transactionResponse)
       .from(TransactionModel)
       .leftJoin(UserModel, eq(TransactionModel.userId, UserModel.id))
       .where(eq(TransactionModel.id, id))
@@ -74,7 +82,7 @@ export const findTransactionByColumnService = async <
 ) => {
   return (
     await db
-      .select()
+      .select(transactionResponse)
       .from(TransactionModel)
       .leftJoin(UserModel, eq(TransactionModel.userId, UserModel.id))
       .where(eq(TransactionModel[column], value!))
@@ -84,7 +92,6 @@ export const findTransactionByColumnService = async <
 
 export const updateTransactionService = async (
   transactionId: string,
-  userId: string,
   transactionData: Partial<InsertTransactionDTO>,
 ) => {
   const { status } = transactionData;
@@ -97,13 +104,39 @@ export const updateTransactionService = async (
     return await findTransactionByIdService(transactionId);
   }
 
-  return (
-    await db
+  return await db.transaction(async (tx) => {
+    const [updatedTransaction] = await tx
       .update(TransactionModel)
       .set(updateData)
       .where(eq(TransactionModel.id, transactionId))
-      .returning()
-  )[0];
+      .returning();
+
+    if (status === "FAILED" && updatedTransaction) {
+      const orders = await tx
+        .select({
+          id: OrderModel.id,
+          bookId: OrderModel.bookId,
+          quantity: OrderModel.quantity,
+        })
+        .from(OrderModel)
+        .where(eq(OrderModel.transactionId, transactionId));
+
+      await Promise.all(
+        orders.map(async (order) => {
+          await tx
+            .update(BookModel)
+            .set({ stock: sql`${BookModel.stock} + ${order.quantity}` })
+            .where(eq(BookModel.id, order.bookId));
+          await tx
+            .update(OrderModel)
+            .set({ shippingStatus: "CANCELLED" })
+            .where(eq(OrderModel.id, order.id));
+        }),
+      );
+    }
+
+    return updatedTransaction;
+  });
 };
 
 export const deleteTransactionService = async (transactionId: string) => {

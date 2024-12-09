@@ -17,7 +17,15 @@ router.route("/").get(authMiddleware(), getTransactions);
 router
   .route("/:transactionId")
   .get(getTransactionById)
-  .patch(authMiddleware(), updateTransactionById)
-  .delete(authMiddleware(), deleteTransactionById);
+  .patch(
+    authMiddleware(),
+    roleValidationMiddleware(["ADMIN"]),
+    updateTransactionById,
+  )
+  .delete(
+    authMiddleware(),
+    roleValidationMiddleware(["ADMIN"]),
+    deleteTransactionById,
+  );
 
 export default router;
