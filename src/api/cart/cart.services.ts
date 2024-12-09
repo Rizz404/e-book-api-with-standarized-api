@@ -121,6 +121,7 @@ export const cartCheckoutService = async (
       .insert(TransactionModel)
       .values({
         userId,
+        paymentMethodId,
         totalShippingServicesFee,
         adminFee,
         discount,

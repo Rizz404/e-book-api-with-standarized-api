@@ -136,6 +136,7 @@ export const createOrderService = async (
     const [createTransaction] = await tx
       .insert(TransactionModel)
       .values({
+        paymentMethodId,
         userId,
         totalShippingServicesFee: shippingService.price,
         adminFee,

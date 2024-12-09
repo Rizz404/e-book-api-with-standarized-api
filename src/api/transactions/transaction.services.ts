@@ -1,24 +1,26 @@
-import { faker } from "@faker-js/faker";
-import {
-  and,
-  Column,
-  count,
-  desc,
-  eq,
-  ilike,
-  or,
-  SQL,
-  SQLWrapper,
-} from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 
 import db from "../../config/database.config";
-import LanguageModel from "../languages/language.model";
-import PublisherModel from "../publishers/publisher.model";
 import TransactionModel, {
   InsertTransactionDTO,
   SelectTransactionDTO,
 } from "../transactions/transaction.model";
 import UserModel from "../users/user.model";
+
+export const transactionResponse = {
+  id: TransactionModel.id,
+  userId: TransactionModel.userId,
+  adminFee: TransactionModel.adminFee,
+  totalShippingServicesFee: TransactionModel.totalShippingServicesFee,
+  paymentMethodFee: TransactionModel.paymentMethodFee,
+  paymentReference: TransactionModel.paymentReference,
+  discount: TransactionModel.discount,
+  subtotalPrice: TransactionModel.subtotalPrice,
+  totalPrice: TransactionModel.totalPrice,
+  status: TransactionModel.status,
+  createdAt: TransactionModel.createdAt,
+  updatedAt: TransactionModel.updatedAt,
+};
 
 export const findTransactionsByFiltersService = async (
   limit: string,

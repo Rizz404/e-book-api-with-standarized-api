@@ -8,6 +8,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import PaymentMethodModel from "../payment-methods/payment-method.model";
 import UserModel from "../users/user.model";
 
 export const enumPaymentStatus = pgEnum("payment_status", [
@@ -20,6 +21,9 @@ const TransactionModel = pgTable("transactions", {
   id: uuid().primaryKey().defaultRandom(),
   userId: uuid("user_id")
     .references(() => UserModel.id)
+    .notNull(),
+  paymentMethodId: uuid("payment_method_id")
+    .references(() => PaymentMethodModel.id)
     .notNull(),
   adminFee: decimal("admin_fee", { precision: 10, scale: 2 })
     .notNull()
