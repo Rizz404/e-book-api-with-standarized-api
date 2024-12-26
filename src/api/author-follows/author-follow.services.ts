@@ -2,6 +2,7 @@ import { and, between, count, desc, eq, SQL, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
 import AuthorModel from "../authors/author.model";
+import { authorResponse } from "../authors/author.services";
 import AuthorFollowModel, {
   InsertAuthorFollowDTO,
 } from "./author-follow.model";
@@ -10,17 +11,6 @@ interface IFilters {
   deathDateRange?: { start: string; end: string }; // * Range deathDate
   birthDateRange?: { start: string; end: string }; // * Range birthDate
 }
-
-const authorResponse = {
-  id: AuthorModel.id,
-  name: AuthorModel.name,
-  biography: AuthorModel.biography,
-  birthDate: AuthorModel.birthDate,
-  deathDate: AuthorModel.deathDate,
-  profilePicture: AuthorModel.profilePicture,
-  createdAt: AuthorModel.createdAt,
-  updatedAt: AuthorModel.updatedAt,
-};
 
 export const followAuthorService = async (
   authorFollowData: InsertAuthorFollowDTO,

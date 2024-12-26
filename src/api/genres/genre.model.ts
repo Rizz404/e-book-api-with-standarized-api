@@ -1,5 +1,6 @@
 import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 import {
+  integer,
   pgTable,
   text,
   timestamp,
@@ -18,6 +19,9 @@ const GenreModel = pgTable(
     updatedAt: timestamp("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
+
+    // * Denormalisasi
+    followerCount: integer("follower_count").notNull().default(0),
   },
   (table) => [uniqueIndex().on(table.name)],
 );

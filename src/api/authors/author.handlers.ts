@@ -42,18 +42,42 @@ export const createAuthor: RequestHandler = async (req, res) => {
 // *==========*==========*==========GET==========*==========*==========*
 export const getAuthors: RequestHandler = async (req, res) => {
   try {
-    const { page = "1", limit = "10" } =
-      req.query as unknown as Partial<SelectAuthorDTO> & {
-        page?: string;
-        limit?: string;
-      };
+    const userId = req.user?.id;
+    const {
+      page = "1",
+      limit = "10",
+      birthDateRange,
+      deathDateRange,
+    } = req.query as unknown as {
+      page?: string;
+      limit?: string;
+      birthDateRange?: string;
+      deathDateRange?: string;
+    };
 
-    // * Validasi dan parsing `page` dan `limit` pake function
     const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
+
+    // * Literally menggunakan anonymous function
+    const parsedFilters = {
+      birthDateRange: birthDateRange
+        ? (() => {
+            const [start, end] = birthDateRange.split(",");
+            return { start, end };
+          })()
+        : undefined,
+      deathDateRange: deathDateRange
+        ? (() => {
+            const [start, end] = deathDateRange.split(",");
+            return { start, end };
+          })()
+        : undefined,
+    };
 
     const { authors, totalItems } = await findAuthorsByFiltersService(
       limit,
       offset,
+      parsedFilters,
+      userId,
     );
 
     createSuccessResponse(
@@ -67,6 +91,7 @@ export const getAuthors: RequestHandler = async (req, res) => {
 
 export const getAuthorsLikeColumn: RequestHandler = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const {
       page = "1",
       limit = "10",
@@ -82,6 +107,7 @@ export const getAuthorsLikeColumn: RequestHandler = async (req, res) => {
       offset,
       AuthorModel.name,
       name,
+      userId,
     );
 
     createSuccessResponse(
@@ -95,9 +121,10 @@ export const getAuthorsLikeColumn: RequestHandler = async (req, res) => {
 
 export const getAuthorById: RequestHandler = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { authorId } = req.params;
 
-    const author = await findAuthorByIdService(authorId);
+    const author = await findAuthorByIdService(authorId, userId);
 
     if (!author) {
       return createErrorResponse(res, "Author not found", 404);

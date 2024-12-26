@@ -2,6 +2,7 @@ import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import {
   date,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -22,6 +23,9 @@ const PublisherModel = pgTable(
     updatedAt: timestamp("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
+
+    // * Denormalisasi
+    followerCount: integer("follower_count").notNull().default(0),
   },
   (table) => [uniqueIndex().on(table.name), uniqueIndex().on(table.email)],
 );

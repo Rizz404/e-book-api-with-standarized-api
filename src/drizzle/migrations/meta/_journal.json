@@ -99,6 +99,13 @@
       "when": 1735186194795,
       "tag": "0013_add_book_wishlist_count",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1735190637187,
+      "tag": "0014_add_counter_for_follow",
+      "breakpoints": true
     }
   ]
 }

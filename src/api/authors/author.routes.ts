@@ -23,11 +23,11 @@ router
     // schemaValidatorMiddleware(createAuthorSchema),
     createAuthor,
   )
-  .get(getAuthors);
-router.get("/search", getAuthorsLikeColumn);
+  .get(authMiddleware("optional"), getAuthors);
+router.get("/search", authMiddleware("optional"), getAuthorsLikeColumn);
 router
   .route("/:authorId")
-  .get(getAuthorById)
+  .get(authMiddleware("optional"), getAuthorById)
   .patch(
     authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
