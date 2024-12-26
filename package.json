@@ -12,7 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "ts-node -r tsconfig-paths/register src/seeders"
+    "db:seed": "ts-node -r tsconfig-paths/register src/utils/run-seeder.utils.ts"
   },
   "author": "Rizqiansyah Ramadhan",
   "license": "ISC",

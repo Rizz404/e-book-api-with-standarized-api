@@ -160,11 +160,10 @@ export const findBooksByFiltersService = async (
 
   const filtersQuery = conditions.length > 0 ? and(...conditions) : undefined;
 
-  // * Join dengan LanguageModel aja di total items
   const totalItems =
     (
       await db
-        .select({ count: count() })
+        .select({ count: sql`COUNT(DISTINCT ${BookModel.id})` })
         .from(BookModel)
         .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
         .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
@@ -201,7 +200,7 @@ export const findBooksByFiltersService = async (
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems, books };
+  return { totalItems: +totalItems, books };
 };
 
 export const findBooksLikeColumnService = async (

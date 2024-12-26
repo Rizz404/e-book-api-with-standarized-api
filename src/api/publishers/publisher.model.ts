@@ -19,6 +19,11 @@ const PublisherModel = pgTable(
     email: varchar({ length: 255 }).notNull(),
     description: text(),
     website: text().array(),
+    picture: varchar("picture", { length: 255 })
+      .notNull()
+      .default(
+        "https://i.pinimg.com/236x/11/3f/0f/113f0fff79469d6e6c14baa01dc5a177.jpg",
+      ),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

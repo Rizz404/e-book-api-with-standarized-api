@@ -51,7 +51,7 @@ const BookModel = pgTable(
       .$type<number>(),
     stock: integer().notNull().default(0),
     status: enumBookStatus().default("AVAILABLE"),
-    fileUrl: varchar("file_url", { length: 255 }).notNull(),
+    fileUrl: varchar("file_url", { length: 255 }),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

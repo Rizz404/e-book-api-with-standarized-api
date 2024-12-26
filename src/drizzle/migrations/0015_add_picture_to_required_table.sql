@@ -1,0 +1,3 @@
+ALTER TABLE "books" ALTER COLUMN "file_url" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "genres" ADD COLUMN "picture" varchar(255) DEFAULT 'https://i.pinimg.com/originals/ca/6c/74/ca6c744333366d89b3824449cb844c2e.gif' NOT NULL;--> statement-breakpoint
+ALTER TABLE "publishers" ADD COLUMN "picture" varchar(255) DEFAULT 'https://i.pinimg.com/236x/11/3f/0f/113f0fff79469d6e6c14baa01dc5a177.jpg' NOT NULL;
