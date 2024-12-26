@@ -146,6 +146,25 @@ export const updateAuthorService = async (
   )[0];
 };
 
+export const updateAuthorFollowerCountService = async (
+  authorId: string,
+  action: "increment" | "decrement",
+  value = 1,
+) => {
+  const updateExpression =
+    action === "increment"
+      ? sql`${AuthorModel.followerCount} + ${value}`
+      : sql`${AuthorModel.followerCount} - ${value}`;
+
+  return (
+    await db
+      .update(AuthorModel)
+      .set({ followerCount: updateExpression })
+      .where(eq(AuthorModel.id, authorId))
+      .returning()
+  )[0];
+};
+
 export const deleteAuthorService = async (authorId: string) => {
   return (
     await db.delete(AuthorModel).where(eq(AuthorModel.id, authorId)).returning()
@@ -160,8 +179,8 @@ export const getIsFollowedAuthor = (userId?: string) => {
           WHEN EXISTS (
             SELECT 1
             FROM author_follows
-            WHERE author_follows.followed_user_id = ${AuthorModel.id}
-              AND author_follows.following_author_id = ${userId}
+            WHERE author_follows.followed_user_id = ${userId}
+              AND author_follows.following_author_id = ${AuthorModel.id}
           ) THEN true
           ELSE false
         END

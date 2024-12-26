@@ -6,6 +6,7 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import { updateAuthorFollowerCountService } from "../authors/author.services";
 import AuthorFollowModel, {
   InsertAuthorFollowDTO,
   SelectAuthorFollowDTO,
@@ -44,6 +45,10 @@ export const followAuthorByAuthorId: RequestHandler = async (req, res) => {
       followedUserId: userId,
       followingAuthorId: authorId,
     });
+
+    if (followedAuthor) {
+      await updateAuthorFollowerCountService(authorId, "increment");
+    }
 
     createSuccessResponse(
       res,
@@ -154,6 +159,7 @@ export const unFollowAuthorByAuthorId: RequestHandler = async (req, res) => {
     }
 
     await unfollowAuthorService(authorId, userId);
+    await updateAuthorFollowerCountService(authorId, "decrement");
 
     createSuccessResponse(
       res,
