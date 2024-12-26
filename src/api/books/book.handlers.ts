@@ -102,15 +102,21 @@ export const createBook: RequestHandler = async (req, res) => {
 // *==========*==========*==========GET==========*==========*==========*
 export const getBooks: RequestHandler = async (req, res) => {
   try {
+    // * Udah ada otomatis dari dto buat object yang kaga ada typenya
     const {
       page = "1",
       limit = "10",
       status,
+      sellerId,
+      genreId,
+      authorId,
+      publisherId,
       publicationDateRange,
       language,
     } = req.query as unknown as Partial<SelectBookDTO> & {
       page?: string;
       limit?: string;
+      genreId?: string;
       publicationDateRange?: string;
       language?: string;
     };
@@ -128,7 +134,15 @@ export const getBooks: RequestHandler = async (req, res) => {
     const { books, totalItems } = await findBooksByFiltersService(
       limit,
       offset,
-      { status, publicationDateRange: publicationDateRangeFilter, language },
+      {
+        status,
+        sellerId,
+        genreId,
+        authorId,
+        publisherId,
+        publicationDateRange: publicationDateRangeFilter,
+        language,
+      },
     );
 
     createSuccessResponse(

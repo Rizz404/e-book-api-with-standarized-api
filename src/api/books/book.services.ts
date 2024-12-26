@@ -26,6 +26,9 @@ import { findUserByIdService } from "../users/user.services";
 
 export interface Filters {
   sellerId?: string;
+  genreId?: string;
+  authorId?: string;
+  publisherId?: string;
   status?: "AVAILABLE" | "SOLD" | "ARCHIVED" | null;
   publicationDateRange?: { start: string; end: string };
   language?: string;
@@ -36,19 +39,26 @@ export const bookResponse = {
   sellerId: BookModel.sellerId,
   title: BookModel.title,
   genres: sql`
-      json_agg(
-        json_build_object('id', ${GenreModel.id}, 'name', ${GenreModel.name})
-      )
-    `.as("genres"),
+  (
+    SELECT json_agg(json_build_object('id', id, 'name', name))
+    FROM (
+      SELECT DISTINCT ${GenreModel.id} AS id, ${GenreModel.name} AS name
+      FROM ${BookGenreModel}
+      INNER JOIN ${GenreModel} ON ${BookGenreModel.genreId} = ${GenreModel.id}
+      WHERE ${BookGenreModel.bookId} = ${BookModel.id}
+    ) AS unique_genres
+  )
+`.as("genres"),
   bookPictures: sql`
-      json_agg(
-        json_build_object(
-          'id', ${BookPictureModel.id},
-          'url', ${BookPictureModel.url},
-          'isCover', ${BookPictureModel.isCover}
-        )
-      )
-    `.as("bookPictures"),
+(
+  SELECT json_agg(json_build_object('id', id, 'url', url, 'isCover', isCover))
+  FROM (
+    SELECT DISTINCT ${BookPictureModel.id} AS id, ${BookPictureModel.url} AS url, ${BookPictureModel.isCover} AS isCover
+    FROM ${BookPictureModel}
+    WHERE ${BookPictureModel.bookId} = ${BookModel.id}
+  ) AS unique_pictures
+)
+`.as("bookPictures"),
   description: BookModel.description,
   status: BookModel.status,
   slug: BookModel.slug,
@@ -75,6 +85,10 @@ export const bookResponse = {
     website: PublisherModel.website,
   },
   language: LanguageModel.name,
+  // * Baru nambahin createdAt dan updatedAt
+  // ! nanti deploy lagi
+  createdAt: BookModel.createdAt,
+  updatedAt: BookModel.updatedAt,
 };
 
 export const createBookService = async (
@@ -93,6 +107,7 @@ export const createBookService = async (
   )[0];
 };
 
+// todo: Nanti push udah bener
 export const findBooksByFiltersService = async (
   limit: string,
   offset: number,
@@ -108,6 +123,24 @@ export const findBooksByFiltersService = async (
     conditions.push(eq(UserModel.id, filters.sellerId));
   }
 
+  if (filters?.genreId) {
+    conditions.push(
+      sql`EXISTS (
+        SELECT 1 FROM ${BookGenreModel}
+        WHERE ${BookGenreModel.bookId} = ${BookModel.id}
+        AND ${BookGenreModel.genreId} = ${filters.genreId}
+      )`,
+    );
+  }
+
+  if (filters?.authorId) {
+    conditions.push(eq(AuthorModel.id, filters.authorId));
+  }
+
+  if (filters?.publisherId) {
+    conditions.push(eq(PublisherModel.id, filters.publisherId));
+  }
+
   if (filters?.publicationDateRange) {
     conditions.push(
       between(
@@ -121,6 +154,20 @@ export const findBooksByFiltersService = async (
   if (filters?.language) {
     conditions.push(eq(LanguageModel.name, filters.language));
   }
+
+  console.log(
+    db
+      .select(bookResponse)
+      .from(BookModel)
+      .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
+      .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+      .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
+      .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
+      .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
+      .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
+      .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
+      .toSQL(), // Debug query
+  );
 
   const filtersQuery = conditions.length > 0 ? and(...conditions) : undefined;
 
