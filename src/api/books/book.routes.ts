@@ -22,11 +22,11 @@ router
     // schemaValidatorMiddleware(createBookSchema),
     createBook,
   )
-  .get(getBooks);
-router.get("/search", getBooksLikeColumn);
+  .get(authMiddleware("optional"), getBooks);
+router.get("/search", authMiddleware("optional"), getBooksLikeColumn);
 router
   .route("/:bookId")
-  .get(getBookById)
+  .get(authMiddleware("optional"), getBookById)
   .patch(authMiddleware(), updateBookById)
   .delete(authMiddleware(), deleteBookById);
 

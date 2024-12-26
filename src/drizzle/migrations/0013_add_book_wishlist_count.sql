@@ -1,0 +1,1 @@
+ALTER TABLE "books" ADD COLUMN "wishlistCount" integer DEFAULT 0 NOT NULL;

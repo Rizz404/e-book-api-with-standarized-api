@@ -17,6 +17,7 @@ import db from "../../config/database.config";
 import AuthorModel from "../authors/author.model";
 import BookGenreModel from "../book-genre/book-genre.model";
 import BookPictureModel from "../book-pictures/book-picture.model";
+import BookWishlistModel from "../book-wishlist/book-wishlist.model";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "../books/book.model";
 import GenreModel from "../genres/genre.model";
 import LanguageModel from "../languages/language.model";
@@ -85,10 +86,11 @@ export const bookResponse = {
     website: PublisherModel.website,
   },
   language: LanguageModel.name,
-  // * Baru nambahin createdAt dan updatedAt
-  // ! nanti deploy lagi
   createdAt: BookModel.createdAt,
   updatedAt: BookModel.updatedAt,
+
+  // * Denormalisasi
+  wishlistCount: BookModel.wishlistCount,
 };
 
 export const createBookService = async (
@@ -112,6 +114,7 @@ export const findBooksByFiltersService = async (
   limit: string,
   offset: number,
   filters?: Filters,
+  userId?: string, // * Buat denormalisasi wishlist
 ) => {
   const conditions: SQL<unknown>[] = [];
 
@@ -174,7 +177,10 @@ export const findBooksByFiltersService = async (
     )[0].count || 0;
 
   const books = await db
-    .select(bookResponse)
+    .select({
+      ...bookResponse,
+      ...getIsWishlisted(userId),
+    })
     .from(BookModel)
     .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
     .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
@@ -203,6 +209,7 @@ export const findBooksLikeColumnService = async (
   offset: number,
   column: Column,
   value: string | SQLWrapper,
+  userId?: string,
 ) => {
   const totalItems =
     (
@@ -212,7 +219,10 @@ export const findBooksLikeColumnService = async (
         .where(ilike(column, `%${value}%`))
     )[0].count || 0;
   const books = await db
-    .select(bookResponse)
+    .select({
+      ...bookResponse,
+      ...getIsWishlisted(userId),
+    })
     .from(BookModel)
     .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
     .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
@@ -236,10 +246,13 @@ export const findBooksLikeColumnService = async (
   return { totalItems, books };
 };
 
-export const findBookByIdService = async (id: string) => {
+export const findBookByIdService = async (id: string, userId?: string) => {
   return (
     await db
-      .select(bookResponse)
+      .select({
+        ...bookResponse,
+        ...getIsWishlisted(userId),
+      })
       .from(BookModel)
       .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
       .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
@@ -264,11 +277,15 @@ export const findBookByColumnService = async <
   Column extends keyof SelectBookDTO,
 >(
   column: Column,
-  value: SelectBookDTO[Column], // Tipe data sesuai kolom
+  value: SelectBookDTO[Column], // * Tipe data sesuai kolom
+  userId?: string,
 ) => {
   return (
     await db
-      .select(bookResponse)
+      .select({
+        ...bookResponse,
+        ...getIsWishlisted(userId),
+      })
       .from(BookModel)
       .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
       .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
@@ -344,8 +361,45 @@ export const updateBookService = async (
   )[0];
 };
 
+export const updateBookWishlistCountService = async (
+  bookId: string,
+  action: "increment" | "decrement",
+  value = 1,
+) => {
+  const updateExpression =
+    action === "increment"
+      ? sql`${BookModel.wishlistCount} + ${value}`
+      : sql`${BookModel.wishlistCount} - ${value}`;
+
+  return (
+    await db
+      .update(BookModel)
+      .set({ wishlistCount: updateExpression })
+      .where(eq(BookModel.id, bookId))
+      .returning()
+  )[0];
+};
+
 export const deleteBookService = async (bookId: string) => {
   return (
     await db.delete(BookModel).where(eq(BookModel.id, bookId)).returning()
   )[0];
+};
+
+export const getIsWishlisted = (userId?: string) => {
+  return {
+    isWishlisted: userId
+      ? sql`
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM book_wishlist
+            WHERE book_wishlist.book_id = ${BookModel.id}
+              AND book_wishlist.user_id = ${userId}
+          ) THEN true
+          ELSE false
+        END
+      `.as("isWishlisted")
+      : sql`false`.as("isWishlisted"), // Jika userId tidak ada, langsung false
+  };
 };

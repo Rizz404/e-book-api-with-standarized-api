@@ -5,6 +5,7 @@ import AuthorModel from "../authors/author.model";
 import BookGenreModel from "../book-genre/book-genre.model";
 import BookPictureModel from "../book-pictures/book-picture.model";
 import BookModel from "../books/book.model";
+import { bookResponse, getIsWishlisted } from "../books/book.services";
 import GenreModel from "../genres/genre.model";
 import LanguageModel from "../languages/language.model";
 import PublisherModel from "../publishers/publisher.model";
@@ -12,61 +13,6 @@ import UserModel from "../users/user.model";
 import BookWishlistModel, {
   InsertBookWishlistDTO,
 } from "./book-wishlist.model";
-
-export const bookResponse = {
-  id: BookModel.id,
-  sellerId: BookModel.sellerId,
-  title: BookModel.title,
-  genres: sql`
-  (
-    SELECT json_agg(json_build_object('id', id, 'name', name))
-    FROM (
-      SELECT DISTINCT ${GenreModel.id} AS id, ${GenreModel.name} AS name
-      FROM ${BookGenreModel}
-      INNER JOIN ${GenreModel} ON ${BookGenreModel.genreId} = ${GenreModel.id}
-      WHERE ${BookGenreModel.bookId} = ${BookModel.id}
-    ) AS unique_genres
-  )
-`.as("genres"),
-  bookPictures: sql`
-(
-  SELECT json_agg(json_build_object('id', id, 'url', url, 'isCover', isCover))
-  FROM (
-    SELECT DISTINCT ${BookPictureModel.id} AS id, ${BookPictureModel.url} AS url, ${BookPictureModel.isCover} AS isCover
-    FROM ${BookPictureModel}
-    WHERE ${BookPictureModel.bookId} = ${BookModel.id}
-  ) AS unique_pictures
-)
-`.as("bookPictures"),
-  description: BookModel.description,
-  status: BookModel.status,
-  slug: BookModel.slug,
-  isbn: BookModel.isbn,
-  stock: BookModel.stock,
-  price: BookModel.price,
-  fileUrl: BookModel.fileUrl,
-  publicationDate: BookModel.publicationDate,
-  author: {
-    id: AuthorModel.id,
-    name: AuthorModel.name,
-  },
-  seller: {
-    id: UserModel.id,
-    username: UserModel.username,
-    email: UserModel.email,
-    isVerified: UserModel.isVerified,
-    profilePicture: UserModel.profilePicture,
-  },
-  publisher: {
-    id: PublisherModel.id,
-    name: PublisherModel.name,
-    email: PublisherModel.email,
-    website: PublisherModel.website,
-  },
-  language: LanguageModel.name,
-  createdAt: BookModel.createdAt,
-  updatedAt: BookModel.updatedAt,
-};
 
 export const createWishlistService = async (
   wishlistFollowData: InsertBookWishlistDTO,
@@ -89,6 +35,7 @@ export const findBookWishlistService = async (
         .from(BookModel)
         .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
         .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+        .leftJoin(BookWishlistModel, eq(BookModel.id, BookWishlistModel.bookId))
         .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
         .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
         .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
@@ -98,10 +45,14 @@ export const findBookWishlistService = async (
     )[0].count || 0;
 
   const books = await db
-    .select(bookResponse)
+    .select({
+      ...bookResponse,
+      ...getIsWishlisted(userId),
+    })
     .from(BookModel)
     .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
     .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+    .leftJoin(BookWishlistModel, eq(BookModel.id, BookWishlistModel.bookId))
     .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
     .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
     .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))

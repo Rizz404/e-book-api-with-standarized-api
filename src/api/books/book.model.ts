@@ -56,6 +56,9 @@ const BookModel = pgTable(
     updatedAt: timestamp("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
+
+    // * Denormalisasi
+    wishlistCount: integer("wishlist_count").notNull().default(0),
   },
   // * Nama boleh ada yang sama tapi slugnya tidak, karena ditambah seller username
   (table) => [

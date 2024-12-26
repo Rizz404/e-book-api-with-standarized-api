@@ -102,6 +102,7 @@ export const createBook: RequestHandler = async (req, res) => {
 // *==========*==========*==========GET==========*==========*==========*
 export const getBooks: RequestHandler = async (req, res) => {
   try {
+    const userId = req.user?.id; // * Buat denormalisasi
     // * Udah ada otomatis dari dto buat object yang kaga ada typenya
     const {
       page = "1",
@@ -143,6 +144,7 @@ export const getBooks: RequestHandler = async (req, res) => {
         publicationDateRange: publicationDateRangeFilter,
         language,
       },
+      userId,
     );
 
     createSuccessResponse(
@@ -156,6 +158,7 @@ export const getBooks: RequestHandler = async (req, res) => {
 
 export const getBooksLikeColumn: RequestHandler = async (req, res) => {
   try {
+    const userId = req.user?.id; // * Buat denormalisasi
     const {
       page = "1",
       limit = "10",
@@ -180,6 +183,7 @@ export const getBooksLikeColumn: RequestHandler = async (req, res) => {
       offset,
       title ? BookModel.title : BookModel.slug,
       title || slug,
+      userId,
     );
 
     createSuccessResponse(
@@ -193,9 +197,10 @@ export const getBooksLikeColumn: RequestHandler = async (req, res) => {
 
 export const getBookById: RequestHandler = async (req, res) => {
   try {
+    const userId = req.user?.id; // * Buat denormalisasi
     const { bookId } = req.params;
 
-    const book = await findBookByIdService(bookId);
+    const book = await findBookByIdService(bookId, userId);
 
     if (!book) {
       return createErrorResponse(res, "Book not found", 404);

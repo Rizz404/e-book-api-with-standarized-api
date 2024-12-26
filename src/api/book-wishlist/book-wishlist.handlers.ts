@@ -6,6 +6,7 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import { updateBookWishlistCountService } from "../books/book.services";
 import {
   createWishlistService,
   deleteWishlistService,
@@ -27,23 +28,27 @@ export const createWishlistByBookId: RequestHandler = async (req, res) => {
       );
     }
 
-    const alreadyFollowedWishlist = await findOneBookWishlistService(
+    const alreadyAddToWishlist = await findOneBookWishlistService(
       bookId,
       userId,
     );
 
-    if (alreadyFollowedWishlist) {
+    if (alreadyAddToWishlist) {
       return createErrorResponse(res, "Already add book to this wishlist", 400);
     }
 
-    const followedWishlist = await createWishlistService({
+    const addedToWishlist = await createWishlistService({
       userId: userId,
       bookId: bookId,
     });
 
+    if (addedToWishlist) {
+      await updateBookWishlistCountService(bookId, "increment");
+    }
+
     createSuccessResponse(
       res,
-      followedWishlist,
+      addedToWishlist,
       `Successfully add book to wishlist with id ${bookId}`,
       201,
     );
@@ -117,13 +122,14 @@ export const deleteWishlistByBookId: RequestHandler = async (req, res) => {
       );
     }
 
-    const followingWishlist = await findOneBookWishlistService(bookId, userId);
+    const existingWishlist = await findOneBookWishlistService(bookId, userId);
 
-    if (!followingWishlist) {
+    if (!existingWishlist) {
       return createErrorResponse(res, "Already remove book from wishlist", 400);
     }
 
     await deleteWishlistService(bookId, userId);
+    await updateBookWishlistCountService(bookId, "decrement");
 
     createSuccessResponse(
       res,

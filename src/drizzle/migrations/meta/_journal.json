@@ -92,6 +92,13 @@
       "when": 1735184537594,
       "tag": "0012_add_book_wishlist",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1735186194795,
+      "tag": "0013_add_book_wishlist_count",
+      "breakpoints": true
     }
   ]
 }
