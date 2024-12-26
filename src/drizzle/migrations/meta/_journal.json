@@ -85,6 +85,13 @@
       "when": 1733746062128,
       "tag": "0011_add_payment_method_id_to_transaction",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1735184537594,
+      "tag": "0012_add_book_wishlist",
+      "breakpoints": true
     }
   ]
 }

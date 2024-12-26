@@ -155,20 +155,6 @@ export const findBooksByFiltersService = async (
     conditions.push(eq(LanguageModel.name, filters.language));
   }
 
-  console.log(
-    db
-      .select(bookResponse)
-      .from(BookModel)
-      .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
-      .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
-      .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
-      .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
-      .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
-      .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
-      .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
-      .toSQL(), // Debug query
-  );
-
   const filtersQuery = conditions.length > 0 ? and(...conditions) : undefined;
 
   // * Join dengan LanguageModel aja di total items
@@ -177,8 +163,13 @@ export const findBooksByFiltersService = async (
       await db
         .select({ count: count() })
         .from(BookModel)
-        .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
+        .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
+        .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+        .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
+        .leftJoin(AuthorModel, eq(BookModel.authorId, AuthorModel.id))
         .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
+        .leftJoin(PublisherModel, eq(BookModel.publisherId, PublisherModel.id))
+        .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
         .where(filtersQuery)
     )[0].count || 0;
 

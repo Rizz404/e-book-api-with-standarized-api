@@ -6,6 +6,7 @@ import AuthorModel from "../api/authors/author.model";
 import BookGenreModel from "../api/book-genre/book-genre.model";
 import BookPictureModel from "../api/book-pictures/book-picture.model";
 import BookReviewModel from "../api/book-reviews/book-review.model";
+import BookWishlistModel from "../api/book-wishlist/book-wishlist.model";
 import BookModel, { enumBookStatus } from "../api/books/book.model";
 import CartModel from "../api/cart/cart.model";
 import CartItemModel from "../api/cart-items/cart-item.model";
@@ -33,6 +34,7 @@ export {
   BookModel,
   BookPictureModel,
   BookReviewModel,
+  BookWishlistModel,
   CartItemModel,
   CartModel,
   enumBookStatus,
