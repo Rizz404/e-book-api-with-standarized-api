@@ -31,7 +31,7 @@ export const findBookWishlistService = async (
   const totalItems =
     (
       await db
-        .select({ count: count() })
+        .select({ count: sql`COUNT(DISTINCT ${BookModel.id})` })
         .from(BookModel)
         .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
         .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
@@ -70,7 +70,7 @@ export const findBookWishlistService = async (
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems, books };
+  return { totalItems: +totalItems, books };
 };
 
 export const findOneBookWishlistService = async (
