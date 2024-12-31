@@ -30,6 +30,11 @@ const seedBooks = async () => {
       "https://i.pinimg.com/236x/52/d3/4e/52d34ede46b02cc70c1f5eb4eec2e59d.jpg",
       "https://i.pinimg.com/236x/ca/9f/51/ca9f51799b5dd4625beb7cd3549e65cf.jpg",
       "https://i.pinimg.com/474x/c8/40/4a/c8404a3376fac98a20099a9d6fb650fe.jpg",
+      "https://i.pinimg.com/236x/65/20/9a/65209aff43fa12661a3359a67e201d30.jpg",
+      "https://i.pinimg.com/236x/f3/81/86/f38186a42ba993765389b1f083e84c0d.jpg",
+      "https://i.pinimg.com/236x/f2/a0/71/f2a07180cf5c57e2494704b39b73252c.jpg",
+      "https://i.pinimg.com/236x/a0/e6/26/a0e626af3883e109da440ec021080f99.jpg",
+      "https://i.pinimg.com/236x/26/3e/27/263e270a943a0996bdd3623098e41a6f.jpg",
     ];
 
     if (
@@ -42,7 +47,7 @@ const seedBooks = async () => {
       throw new Error("Ada yang null tuh atau gak ada data");
     }
 
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 70; i++) {
       const bookTitle = faker.book.title();
 
       const existingBook = await db
