@@ -24,14 +24,30 @@ export const createAuthor: RequestHandler = async (req, res) => {
       InsertAuthorDTO,
       "name" | "biography" | "profilePicture" | "birthDate" | "deathDate"
     > = req.body;
+    const profilePictureAsFile = req.file;
 
-    const author = await findAuthorByColumnService(authorData.name);
-
-    if (author) {
-      return createErrorResponse(res, "Author already exist", 400);
+    // * Cek apakah penulis dengan nama yang sama sudah ada
+    const existingAuthor = await findAuthorByColumnService(authorData.name);
+    if (existingAuthor) {
+      return createErrorResponse(res, "Author already exists", 400);
     }
 
-    const newAuthor = await createAuthorService(authorData);
+    // * Periksa apakah profilePicture diberikan sebagai file atau string
+    const profilePicture =
+      profilePictureAsFile?.cloudinary?.secure_url || authorData.profilePicture;
+
+    if (profilePictureAsFile && authorData.profilePicture) {
+      return createErrorResponse(
+        res,
+        "You cannot provide both file and profilePicture URL",
+        400,
+      );
+    }
+
+    const newAuthor = await createAuthorService({
+      ...authorData,
+      profilePicture,
+    });
 
     createSuccessResponse(res, newAuthor, "Author created successfully", 201);
   } catch (error) {

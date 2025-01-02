@@ -3,6 +3,7 @@ import express from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import roleValidationMiddleware from "../../middleware/role-validation.middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
+import { uploadFields } from "../../middleware/upload-file.middleware";
 import {
   createBook,
   deleteBookById,
@@ -15,11 +16,20 @@ import {
 
 const router = express.Router();
 
+const uploadBookFields = uploadFields(
+  [
+    { name: "fileUrl", maxCount: 1 }, // * Hanya 1 file
+    { name: "bookPictureString", maxCount: 7 }, // * Maksimal 10 gambar
+  ],
+  "books",
+);
+
 router
   .route("/")
   .post(
     authMiddleware(),
     // schemaValidatorMiddleware(createBookSchema),
+    uploadBookFields,
     createBook,
   )
   .get(authMiddleware("optional"), getBooks);

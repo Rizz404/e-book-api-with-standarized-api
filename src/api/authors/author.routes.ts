@@ -3,6 +3,7 @@ import express from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import roleValidationMiddleware from "../../middleware/role-validation.middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
+import { uploadSingle } from "../../middleware/upload-file.middleware";
 import {
   createAuthor,
   deleteAuthorById,
@@ -20,6 +21,7 @@ router
   .post(
     authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
+    uploadSingle("profilePicture", "authors"),
     // schemaValidatorMiddleware(createAuthorSchema),
     createAuthor,
   )

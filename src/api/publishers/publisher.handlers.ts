@@ -23,15 +23,37 @@ import {
 // *==========*==========*==========POST==========*==========*==========*
 export const createPublisher: RequestHandler = async (req, res) => {
   try {
-    const publisherData: InsertPublisherDTO = req.body;
+    const publisherData: Pick<
+      InsertPublisherDTO,
+      "name" | "email" | "description" | "picture" | "website"
+    > = req.body;
 
-    const publisher = await findPublisherByColumnService(publisherData.name);
+    const pictureAsFile = req.file;
 
-    if (publisher) {
-      return createErrorResponse(res, "Publisher already exist", 400);
+    // * Cek apakah penulis dengan nama yang sama sudah ada
+    const existingPublisher = await findPublisherByColumnService(
+      publisherData.name,
+    );
+    if (existingPublisher) {
+      return createErrorResponse(res, "Publisher already exists", 400);
     }
 
-    const newPublisher = await createPublisherService(publisherData);
+    // * Periksa apakah picture diberikan sebagai file atau string
+    const picture =
+      pictureAsFile?.cloudinary?.secure_url || publisherData.picture;
+
+    if (pictureAsFile && publisherData.picture) {
+      return createErrorResponse(
+        res,
+        "You cannot provide both file and picture URL",
+        400,
+      );
+    }
+
+    const newPublisher = await createPublisherService({
+      ...publisherData,
+      picture,
+    });
 
     createSuccessResponse(
       res,

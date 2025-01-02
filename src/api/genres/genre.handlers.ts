@@ -20,15 +20,29 @@ import {
 // *==========*==========*==========POST==========*==========*==========*
 export const createGenre: RequestHandler = async (req, res) => {
   try {
-    const genreData: Pick<InsertGenreDTO, "name" | "description"> = req.body;
+    const genreData: Pick<InsertGenreDTO, "name" | "description" | "picture"> =
+      req.body;
 
-    const genre = await findGenreByColumnService(genreData.name);
+    const pictureAsFile = req.file;
 
-    if (genre) {
-      return createErrorResponse(res, "Genre already exist", 400);
+    // * Cek apakah penulis dengan nama yang sama sudah ada
+    const existingGenre = await findGenreByColumnService(genreData.name);
+    if (existingGenre) {
+      return createErrorResponse(res, "Genre already exists", 400);
     }
 
-    const newGenre = await createGenreService(genreData);
+    // * Periksa apakah picture diberikan sebagai file atau string
+    const picture = pictureAsFile?.cloudinary?.secure_url || genreData.picture;
+
+    if (pictureAsFile && genreData.picture) {
+      return createErrorResponse(
+        res,
+        "You cannot provide both file and picture URL",
+        400,
+      );
+    }
+
+    const newGenre = await createGenreService({ ...genreData, picture });
 
     createSuccessResponse(res, newGenre, "Genre created successfully", 201);
   } catch (error) {

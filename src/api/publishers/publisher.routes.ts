@@ -3,6 +3,7 @@ import express from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import roleValidationMiddleware from "../../middleware/role-validation.middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
+import { uploadSingle } from "../../middleware/upload-file.middleware";
 import {
   createPublisher,
   deletePublisherById,
@@ -21,6 +22,7 @@ router
     authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
     // schemaValidatorMiddleware(createPublisherSchema),
+    uploadSingle("picture", "publishers"),
     createPublisher,
   )
   .get(getPublishers);

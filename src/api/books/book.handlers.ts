@@ -31,8 +31,7 @@ export const createBook: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
     const bookData: InsertBookDTO & {
-      bookGenres: InsertBookGenreDTO[];
-      bookPictures: InsertBookPictureDTO[];
+      bookGenreIds: string[];
     } = req.body;
 
     if (!userId) {
@@ -43,56 +42,72 @@ export const createBook: RequestHandler = async (req, res) => {
       );
     }
 
-    const book = await findBookByColumnService("slug", bookData.slug);
+    // * Cek file dari req.files
+    const files = req.files as {
+      fileUrl?: Express.Multer.File[];
+      bookPictureString?: Express.Multer.File[];
+    };
 
-    if (book) {
-      return createErrorResponse(res, "Book already exist", 400);
+    // * Handle fileUrl (bisa string atau file)
+    let fileUrl: string | undefined;
+
+    if (req.body.fileUrl) {
+      // * Jika fileUrl dikirim sebagai string
+      fileUrl = req.body.fileUrl;
+    } else if (files.fileUrl && files.fileUrl.length > 0) {
+      // * Jika fileUrl di-upload sebagai file
+      fileUrl = files.fileUrl[0].cloudinary?.secure_url; // URL dari Cloudinary
     }
 
-    const newBook = await createBookService({
-      authorId: bookData.authorId,
-      description: bookData.description,
-      publisherId: bookData.publisherId,
-      languageId: bookData.languageId,
-      title: bookData.title,
-      publicationDate: bookData.publicationDate,
-      fileUrl: bookData.fileUrl,
-      sellerId: userId,
-      price: bookData.price,
-      stock: bookData.stock,
-    });
-
-    if (bookData.bookGenres.length >= 12) {
-      return createErrorResponse(res, "Max genres is 12", 400);
+    // * Validasi fileUrl
+    if (!fileUrl) {
+      return createErrorResponse(res, "No fileUrl provided", 400);
     }
 
-    if (bookData.bookPictures.length >= 10) {
+    // * Handle bookPictureString (bisa string array atau file array)
+    const bookPictures: string[] = [];
+
+    // * Tambahkan gambar dari req.body (jika dikirim sebagai string)
+    if (req.body.bookPictureString) {
+      const stringPictures = Array.isArray(req.body.bookPictureString)
+        ? req.body.bookPictureString
+        : [req.body.bookPictureString];
+      bookPictures.push(...stringPictures);
+    }
+
+    // * Tambahkan gambar dari file upload
+    if (files.bookPictureString && files.bookPictureString.length > 0) {
+      files.bookPictureString.forEach((file) => {
+        if (file.cloudinary) {
+          bookPictures.push(file.cloudinary.secure_url);
+        }
+      });
+    }
+
+    // * Validasi jumlah gambar
+    if (bookPictures.length > 10) {
       return createErrorResponse(res, "Max pictures is 10", 400);
     }
 
-    if (newBook) {
-      const bookGenres: InsertBookGenreDTO[] = bookData.bookGenres.map(
-        (genre) => ({
-          bookId: newBook.id,
-          genreId: genre.genreId,
-        }),
-      );
-      const bookPictures: SelectBookPictureDTO[] = bookData.bookPictures.map(
-        (bookPicture) => ({
-          url: bookPicture.url,
-          isCover: bookPicture.isCover || false,
-          bookId: newBook.id,
-        }),
-      );
+    // * Simpan data buku ke database
+    const newBook = await createBookService({
+      ...bookData,
+      fileUrl, // * Masukkan URL file
+      sellerId: userId,
+    });
 
-      if (bookData.bookGenres.length > 0) {
-        await createBookGenresService(bookGenres);
-      }
-      if (bookData.bookPictures.length > 0) {
-        await createBookPicturesService(bookPictures);
-      }
+    // * Simpan gambar terkait buku
+    if (bookPictures.length > 0) {
+      const bookPictureDTOs: SelectBookPictureDTO[] = bookPictures.map(
+        (url) => ({
+          bookId: newBook.id,
+          url,
+        }),
+      );
+      await createBookPicturesService(bookPictureDTOs);
     }
 
+    // * Respon berhasil
     createSuccessResponse(res, newBook, "Book created successfully", 201);
   } catch (error) {
     createErrorResponse(res, error);

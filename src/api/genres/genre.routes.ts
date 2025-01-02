@@ -3,6 +3,7 @@ import express from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import roleValidationMiddleware from "../../middleware/role-validation.middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
+import { uploadSingle } from "../../middleware/upload-file.middleware";
 import {
   createGenre,
   deleteGenreById,
@@ -20,7 +21,7 @@ router
   .post(
     authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
-    // schemaValidatorMiddleware(createGenreSchema),
+    uploadSingle("picture", "genres"),
     createGenre,
   )
   .get(getGenres);
