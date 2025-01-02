@@ -26,12 +26,18 @@ import {
   updateBookService,
 } from "./book.services";
 
+interface CustomRequestFiles {
+  fileUrl?: Express.Multer.File[];
+  bookPictures?: Express.Multer.File[];
+}
+
 // *==========*==========*==========POST==========*==========*==========*
 export const createBook: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
     const bookData: InsertBookDTO & {
       bookGenreIds: string[];
+      bookPictures: string[];
     } = req.body;
 
     if (!userId) {
@@ -42,61 +48,46 @@ export const createBook: RequestHandler = async (req, res) => {
       );
     }
 
-    // * Cek file dari req.files
-    const files = req.files as {
-      fileUrl?: Express.Multer.File[];
-      bookPictureString?: Express.Multer.File[];
-    };
+    console.log("req.files:", req.files);
+    console.log("req.body:", req.body);
 
-    // * Handle fileUrl (bisa string atau file)
+    const files = (req.files as CustomRequestFiles) || {};
+
     let fileUrl: string | undefined;
 
-    if (req.body.fileUrl) {
-      // * Jika fileUrl dikirim sebagai string
-      fileUrl = req.body.fileUrl;
+    if (bookData.fileUrl) {
+      fileUrl = bookData.fileUrl;
     } else if (files.fileUrl && files.fileUrl.length > 0) {
-      // * Jika fileUrl di-upload sebagai file
-      fileUrl = files.fileUrl[0].cloudinary?.secure_url; // URL dari Cloudinary
+      fileUrl = files.fileUrl[0]?.cloudinary?.secure_url;
     }
 
-    // * Validasi fileUrl
-    if (!fileUrl) {
-      return createErrorResponse(res, "No fileUrl provided", 400);
-    }
-
-    // * Handle bookPictureString (bisa string array atau file array)
     const bookPictures: string[] = [];
 
-    // * Tambahkan gambar dari req.body (jika dikirim sebagai string)
-    if (req.body.bookPictureString) {
-      const stringPictures = Array.isArray(req.body.bookPictureString)
-        ? req.body.bookPictureString
-        : [req.body.bookPictureString];
+    if (bookData.bookPictures) {
+      const stringPictures = Array.isArray(bookData.bookPictures)
+        ? bookData.bookPictures
+        : [bookData.bookPictures];
       bookPictures.push(...stringPictures);
     }
 
-    // * Tambahkan gambar dari file upload
-    if (files.bookPictureString && files.bookPictureString.length > 0) {
-      files.bookPictureString.forEach((file) => {
+    if (files.bookPictures && files.bookPictures.length > 0) {
+      files.bookPictures.forEach((file) => {
         if (file.cloudinary) {
           bookPictures.push(file.cloudinary.secure_url);
         }
       });
     }
 
-    // * Validasi jumlah gambar
-    if (bookPictures.length > 10) {
-      return createErrorResponse(res, "Max pictures is 10", 400);
+    if (bookPictures.length > 7) {
+      return createErrorResponse(res, "Max pictures is 7", 400);
     }
 
-    // * Simpan data buku ke database
     const newBook = await createBookService({
       ...bookData,
-      fileUrl, // * Masukkan URL file
+      fileUrl,
       sellerId: userId,
     });
 
-    // * Simpan gambar terkait buku
     if (bookPictures.length > 0) {
       const bookPictureDTOs: SelectBookPictureDTO[] = bookPictures.map(
         (url) => ({
@@ -107,7 +98,6 @@ export const createBook: RequestHandler = async (req, res) => {
       await createBookPicturesService(bookPictureDTOs);
     }
 
-    // * Respon berhasil
     createSuccessResponse(res, newBook, "Book created successfully", 201);
   } catch (error) {
     createErrorResponse(res, error);

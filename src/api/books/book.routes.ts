@@ -19,7 +19,7 @@ const router = express.Router();
 const uploadBookFields = uploadFields(
   [
     { name: "fileUrl", maxCount: 1 }, // * Hanya 1 file
-    { name: "bookPictureString", maxCount: 7 }, // * Maksimal 10 gambar
+    { name: "bookPictures", maxCount: 7 }, // * Maksimal 7 gambar
   ],
   "books",
 );
