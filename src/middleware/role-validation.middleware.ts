@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 
+import { findUserByIdService } from "../api/users/user.services";
 import { createErrorResponse } from "../utils/api-response.utils";
 
 type AllowedRole = "USER" | "ADMIN";
@@ -7,7 +8,7 @@ type AllowedRole = "USER" | "ADMIN";
 const roleValidationMiddleware = (
   allowedRoles: AllowedRole[],
 ): RequestHandler => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const user = req.user;
 
     if (!user) {
@@ -18,7 +19,17 @@ const roleValidationMiddleware = (
       );
     }
 
-    if (!allowedRoles.includes(user.role)) {
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(
+        res,
+        "Something went wrong caused user not created",
+        400,
+      );
+    }
+
+    if (!allowedRoles.includes(currentUser.role)) {
       return createErrorResponse(
         res,
         `Role must be ${allowedRoles.join(", ")}`,

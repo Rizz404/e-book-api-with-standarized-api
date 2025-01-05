@@ -1,14 +1,11 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
-import jwt, { TokenExpiredError } from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
+import { TokenExpiredError } from "jsonwebtoken";
 
+import { decodeAccessToken } from "../api/auth/auth.services";
 import { createErrorResponse } from "../utils/api-response.utils";
 
 interface ReqUser {
   id: string;
-  username: string;
-  email: string;
-  role: "USER" | "ADMIN";
-  profilePicture: string;
 }
 
 declare global {
@@ -28,17 +25,14 @@ export const authMiddleware = (
 
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const accessToken = authHeader.split(" ")[1];
-        const decoded = jwt.verify(
-          accessToken,
-          process.env.JWT_ACCESS_TOKEN as string,
-        ) as ReqUser;
+        const decoded = decodeAccessToken(accessToken);
 
-        if (!decoded.id) {
+        if (!decoded.userId) {
           createErrorResponse(res, "Invalid token", 403);
           return;
         }
 
-        req.user = decoded;
+        req.user = { id: decoded.userId };
 
         if (!req.user) {
           createErrorResponse(

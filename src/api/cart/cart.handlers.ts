@@ -8,6 +8,7 @@ import {
   createSuccessResponse,
 } from "../../utils/api-response.utils";
 import { SelectCartItemDTO } from "../cart-items/cart-item.model";
+import { findUserByIdService } from "../users/user.services";
 import { InsertCartDTO, SelectCartDTO } from "./cart.model";
 import {
   cartCheckoutService,
@@ -151,18 +152,18 @@ export const getCurrentUserCart: RequestHandler = async (req, res) => {
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteCartById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
+    const { cartId } = req.params;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
     }
 
-    const { cartId } = req.params;
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
 
     const existingCart = await findCartByIdService(cartId);
 
@@ -170,7 +171,10 @@ export const deleteCartById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Cart not found", 404);
     }
 
-    if (existingCart.users?.id !== userId && role !== "ADMIN") {
+    if (
+      existingCart.users?.id !== currentUser.id &&
+      currentUser.role !== "ADMIN"
+    ) {
       return createErrorResponse(
         res,
         "You don't have permission to delete this cart",

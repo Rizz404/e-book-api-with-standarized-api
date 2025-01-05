@@ -15,6 +15,7 @@ import {
   SelectBookPictureDTO,
 } from "../book-pictures/book-picture.model";
 import { createBookPicturesService } from "../book-pictures/book-picture.services";
+import { findUserByIdService } from "../users/user.services";
 import BookModel, { InsertBookDTO, SelectBookDTO } from "./book.model";
 import {
   createBookService,
@@ -220,39 +221,43 @@ export const getBookById: RequestHandler = async (req, res) => {
 // *==========*==========*==========PATCH==========*==========*==========*
 export const updateBookById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
+    const { bookId } = req.params;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
     }
 
-    const { bookId } = req.params;
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
     const bookData: Partial<InsertBookDTO> = req.body;
 
     const existingBook = await findBookByIdService(bookId);
-
-    console.log(`userId: ${userId}`);
-    console.log(`sellerId: ${existingBook.seller?.id}`);
-    console.log(`role: ${role}`);
 
     if (!existingBook) {
       return createErrorResponse(res, "Book not found", 404);
     }
 
-    if (existingBook.seller?.id !== userId && role !== "ADMIN") {
+    if (
+      existingBook.seller?.id !== currentUser.id &&
+      currentUser.role !== "ADMIN"
+    ) {
       return createErrorResponse(
         res,
         "You don't have permission to update this book",
-        404,
+        403,
       );
     }
 
-    const updatedBook = await updateBookService(bookId, userId, bookData);
+    const updatedBook = await updateBookService(
+      bookId,
+      currentUser.id,
+      bookData,
+    );
 
     createSuccessResponse(res, updatedBook);
   } catch (error) {
@@ -263,30 +268,32 @@ export const updateBookById: RequestHandler = async (req, res) => {
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteBookById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
-
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
-    }
-
+    const user = req.user;
     const { bookId } = req.params;
 
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
+    }
+
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
     const existingBook = await findBookByIdService(bookId);
 
     if (!existingBook) {
       return createErrorResponse(res, "Book not found", 404);
     }
 
-    if (existingBook.seller?.id !== userId && role !== "ADMIN") {
+    if (
+      existingBook.seller?.id !== currentUser.id &&
+      currentUser.role !== "ADMIN"
+    ) {
       return createErrorResponse(
         res,
-        "You don't have permission to delete this book",
-        404,
+        "You don't have permission to update this book",
+        403,
       );
     }
 

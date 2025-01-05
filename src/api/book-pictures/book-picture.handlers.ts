@@ -10,6 +10,7 @@ import {
 import { addFilters } from "../../utils/query.utils";
 import BookModel from "../books/book.model";
 import { findBooksByFiltersService } from "../books/book.services";
+import { findUserByIdService } from "../users/user.services";
 import BookPictureModel, {
   InsertBookPictureDTO,
   SelectBookPictureDTO,
@@ -119,16 +120,17 @@ export const getBookPictureById: RequestHandler = async (req, res) => {
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteBookPictureById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
     const { bookPictureId } = req.params;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
+    }
+
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
     }
 
     const existingBookPicture = await findBookPictureByIdService(bookPictureId);
@@ -137,7 +139,7 @@ export const deleteBookPictureById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "BookPicture not found", 404);
     }
 
-    if (existingBookPicture.books?.sellerId !== userId) {
+    if (existingBookPicture.books?.sellerId !== currentUser.id) {
       return createErrorResponse(
         res,
         "You don't have permission to delete this book picture",

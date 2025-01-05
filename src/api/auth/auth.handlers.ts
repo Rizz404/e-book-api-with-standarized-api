@@ -98,7 +98,7 @@ export const signIn: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Password not match", 400);
     }
 
-    const accessToken = generateAccessToken(user);
+    const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
 
     const userCredentials = {
@@ -133,7 +133,7 @@ export const refreshExpiredToken: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "User not found", 404);
     }
 
-    const newAccessToken = generateAccessToken(user);
+    const newAccessToken = generateAccessToken(user.id);
 
     createSuccessResponse(
       res,

@@ -20,6 +20,7 @@ import {
   findBookReviewsByFiltersService,
   updateBookReviewService,
 } from "./book-review.services";
+import { findUserByIdService } from "../users/user.services";
 
 // *==========*==========*==========POST==========*==========*==========*
 export const createBookReview: RequestHandler = async (req, res) => {
@@ -111,18 +112,19 @@ export const getBookReviewById: RequestHandler = async (req, res) => {
 // *==========*==========*==========PATCH==========*==========*==========*
 export const updateBookReviewById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
+    const { bookReviewId } = req.params;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
     }
 
-    const { bookReviewId } = req.params;
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
     const bookReviewData: Partial<InsertBookReviewDTO> = req.body;
 
     const existingBookReview = await findBookReviewByIdService(bookReviewId);
@@ -131,7 +133,10 @@ export const updateBookReviewById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "BookReview not found", 404);
     }
 
-    if (existingBookReview.book_reviews.userId !== userId && role !== "ADMIN") {
+    if (
+      existingBookReview.book_reviews.userId !== currentUser.id &&
+      currentUser.role !== "ADMIN"
+    ) {
       return createErrorResponse(
         res,
         "You don't have permission to update this bookReview",
@@ -141,7 +146,7 @@ export const updateBookReviewById: RequestHandler = async (req, res) => {
 
     const updatedBookReview = await updateBookReviewService(
       bookReviewId,
-      userId,
+      currentUser.id,
       bookReviewData,
     );
 
@@ -154,18 +159,18 @@ export const updateBookReviewById: RequestHandler = async (req, res) => {
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteBookReviewById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
+    const { bookReviewId } = req.params;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
     }
 
-    const { bookReviewId } = req.params;
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
 
     const existingBookReview = await findBookReviewByIdService(bookReviewId);
 
@@ -173,10 +178,13 @@ export const deleteBookReviewById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "BookReview not found", 404);
     }
 
-    if (existingBookReview.book_reviews.userId !== userId && role !== "ADMIN") {
+    if (
+      existingBookReview.book_reviews.userId !== currentUser.id &&
+      currentUser.role !== "ADMIN"
+    ) {
       return createErrorResponse(
         res,
-        "You don't have permission to delete this bookReview",
+        "You don't have permission to update this bookReview",
         404,
       );
     }

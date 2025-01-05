@@ -13,6 +13,7 @@ import {
   findCartByColumnService,
   findCartByIdService,
 } from "../cart/cart.services";
+import { findUserByIdService } from "../users/user.services";
 import CartItemModel, {
   InsertCartItemDTO,
   SelectCartItemDTO,
@@ -192,20 +193,21 @@ export const getCartItemById: RequestHandler = async (req, res) => {
 // *==========*==========*==========PATCH==========*==========*==========*
 export const updateCartItemById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
     const { cartItemId } = req.params;
     const cartItemData: Partial<InsertCartItemDTO> = req.body;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
     }
 
-    const userCart = await findCartByColumnService("userId", userId);
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    const userCart = await findCartByColumnService("userId", currentUser.id);
 
     if (!userCart) {
       return createErrorResponse(
@@ -223,7 +225,7 @@ export const updateCartItemById: RequestHandler = async (req, res) => {
 
     if (
       existingCartItem.cart_items.cartId !== userCart.carts.id &&
-      role !== "ADMIN"
+      currentUser.role !== "ADMIN"
     ) {
       return createErrorResponse(
         res,
@@ -234,7 +236,7 @@ export const updateCartItemById: RequestHandler = async (req, res) => {
 
     const updatedCartItem = await updateCartItemService(
       cartItemId,
-      userId,
+      user.id,
       cartItemData,
     );
 
@@ -247,19 +249,20 @@ export const updateCartItemById: RequestHandler = async (req, res) => {
 // *==========*==========*==========DELETE==========*==========*==========*
 export const deleteCartItemById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const role = req.user?.role;
+    const user = req.user;
     const { cartItemId } = req.params;
 
-    if (!userId || !role) {
-      return createErrorResponse(
-        res,
-        "Something went wrong causing user credentials not created",
-        403,
-      );
+    if (!user) {
+      return createErrorResponse(res, "User must login first", 401);
     }
 
-    const userCart = await findCartByColumnService("userId", userId);
+    const currentUser = await findUserByIdService(user.id);
+
+    if (!currentUser) {
+      return createErrorResponse(res, "User not found", 404);
+    }
+
+    const userCart = await findCartByColumnService("userId", currentUser.id);
 
     if (!userCart) {
       return createErrorResponse(
@@ -277,7 +280,7 @@ export const deleteCartItemById: RequestHandler = async (req, res) => {
 
     if (
       existingCartItem.cart_items.cartId !== userCart.carts.id &&
-      role !== "ADMIN"
+      currentUser.role !== "ADMIN"
     ) {
       return createErrorResponse(
         res,
