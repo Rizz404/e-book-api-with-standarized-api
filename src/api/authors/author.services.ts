@@ -31,6 +31,7 @@ export const authorResponse = {
   updatedAt: AuthorModel.updatedAt,
 
   followerCount: AuthorModel.followerCount,
+  bookCount: AuthorModel.bookCount,
 };
 
 export const createAuthorService = async (authorData: InsertAuthorDTO) => {

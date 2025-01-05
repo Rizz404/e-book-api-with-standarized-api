@@ -3,6 +3,7 @@ import express from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import roleValidationMiddleware from "../../middleware/role-validation.middleware";
 import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
+import { uploadSingle } from "../../middleware/upload-file.middleware";
 import {
   createUser,
   deleteUserById,
@@ -27,11 +28,15 @@ router
     schemaValidatorMiddleware(createUserSchema),
     createUser,
   )
-  .get(authMiddleware(), getUsers);
+  .get(authMiddleware(), roleValidationMiddleware(["ADMIN"]), getUsers);
 router
   .route("/profile")
   .get(authMiddleware(), getCurrentUser)
-  .patch(authMiddleware(), updateCurrentUser);
+  .patch(
+    authMiddleware(),
+    uploadSingle("profilePicture", "users"),
+    updateCurrentUser,
+  );
 router.get("/search", getUsersLikeColumn);
 router.patch("/update-password", authMiddleware(), updateCurrentUserPassword);
 router

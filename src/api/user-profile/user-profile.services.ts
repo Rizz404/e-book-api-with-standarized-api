@@ -21,9 +21,10 @@ export const updateUserProfileService = async (
   userId: string,
   userProfileData: Partial<InsertUserProfileDTO>,
 ) => {
-  const { bio } = userProfileData;
+  const { bio, age } = userProfileData;
   const updateData = {
     ...(bio !== undefined && { bio }),
+    ...(age !== undefined && { age }),
   };
 
   if (Object.keys(updateData).length === 0) {

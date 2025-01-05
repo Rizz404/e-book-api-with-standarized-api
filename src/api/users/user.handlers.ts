@@ -7,6 +7,12 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import {
+  deleteCloudinaryImage,
+  getPublicIdFromUrl,
+  isCloudinaryUrl,
+  isValidUrl,
+} from "../../utils/cloudinary-utils";
 import { addFilters } from "../../utils/query.utils";
 import { InsertUserProfileDTO } from "../user-profile/user-profile.model";
 import {
@@ -199,6 +205,7 @@ export const updateCurrentUser: RequestHandler = async (req, res) => {
       email,
       profilePicture,
       bio,
+      age,
     }: Partial<InsertUserDTO> & Partial<InsertUserProfileDTO> = req.body;
 
     if (!userId) {
@@ -215,10 +222,39 @@ export const updateCurrentUser: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "User not found", 404);
     }
 
+    // * Handle profile picture update
+    let profilePictureUrl = existingUser.profilePicture;
+
+    // * Jika ada file upload baru
+    if (req.file?.cloudinary) {
+      // * Hapus image lama dari Cloudinary jika itu adalah Cloudinary image
+      if (
+        existingUser.profilePicture &&
+        isCloudinaryUrl(existingUser.profilePicture)
+      ) {
+        const publicId = getPublicIdFromUrl(existingUser.profilePicture);
+        await deleteCloudinaryImage(publicId);
+      }
+      profilePictureUrl = req.file.cloudinary.secure_url;
+    }
+    // * Jika ada URL string baru yang valid
+    else if (profilePicture && isValidUrl(profilePicture)) {
+      // * Hapus image lama dari Cloudinary jika perlu
+      if (
+        existingUser.profilePicture &&
+        isCloudinaryUrl(existingUser.profilePicture) &&
+        !isCloudinaryUrl(profilePicture) // * Pastikan URL baru bukan dari Cloudinary
+      ) {
+        const publicId = getPublicIdFromUrl(existingUser.profilePicture);
+        await deleteCloudinaryImage(publicId);
+      }
+      profilePictureUrl = profilePicture;
+    }
+
     const updatedUser = await updateUserService(userId, {
       username,
       email,
-      profilePicture,
+      profilePicture: profilePictureUrl,
     });
 
     const existingUserProfile = await findUserProfileByUserIdService(userId);
@@ -227,7 +263,10 @@ export const updateCurrentUser: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "User profile not found", 404);
     }
 
-    const updatedUserProfile = await updateUserProfileService(userId, { bio });
+    const updatedUserProfile = await updateUserProfileService(userId, {
+      bio,
+      age,
+    });
 
     createSuccessResponse(res, {
       ...updatedUser,
@@ -259,7 +298,7 @@ export const updateCurrentUserPassword: RequestHandler = async (req, res) => {
       );
     }
 
-    // Update password melalui service
+    // * Update password melalui service
     await updateUserPasswordService(userId, storedPassword, newPassword);
 
     createSuccessResponse(res, undefined, "Password updated successfully");

@@ -23,39 +23,36 @@ export const authMiddleware = (
     try {
       const { authorization: authHeader } = req.headers;
 
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        const accessToken = authHeader.split(" ")[1];
-        const decoded = decodeAccessToken(accessToken);
-
-        if (!decoded.userId) {
-          createErrorResponse(res, "Invalid token", 403);
-          return;
+      // * Jika tidak ada header authorization
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        if (authType === "required") {
+          return createErrorResponse(res, "Unauthorized", 401);
         }
-
-        req.user = { id: decoded.userId };
-
-        if (!req.user) {
-          createErrorResponse(
-            res,
-            "Something wrong cause req.user not initialized",
-            403,
-          );
-          return;
-        }
+        return next();
       }
 
-      if (authType === "required" && !req.user) {
-        createErrorResponse(res, "Unauthorized", 401);
-        return;
+      // * Decode token
+      const accessToken = authHeader.split(" ")[1];
+      const decoded = decodeAccessToken(accessToken);
+
+      // * Debug dengan cara yang benar
+      console.log("Decoded token:", JSON.stringify(decoded, null, 2));
+
+      // * Validasi hasil decode
+      if (!decoded || !decoded.userId) {
+        return createErrorResponse(res, "Invalid token", 403);
       }
 
+      // * Set user ke request
+      req.user = { id: decoded.userId };
+
+      // * Lanjut ke middleware berikutnya
       next();
     } catch (error) {
       if (error instanceof TokenExpiredError) {
-        createErrorResponse(res, "Token expired", 401);
-      } else {
-        createErrorResponse(res, error);
+        return createErrorResponse(res, "Token expired", 401);
       }
+      return createErrorResponse(res, error);
     }
   };
 };

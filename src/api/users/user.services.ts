@@ -24,6 +24,9 @@ export const userResponse = {
   isEmailVerified: UserModel.isEmailVerified,
   createdAt: UserModel.createdAt,
   updatedAt: UserModel.updatedAt,
+
+  // * Denormalization
+  followerCount: UserModel.followerCount,
 };
 
 export const createUserService = async (userData: SelectUserDTO) => {

@@ -27,6 +27,7 @@ const GenreModel = pgTable(
 
     // * Denormalisasi
     followerCount: integer("follower_count").notNull().default(0),
+    bookCount: integer("book_count").notNull().default(0),
   },
   (table) => [uniqueIndex().on(table.name)],
 );

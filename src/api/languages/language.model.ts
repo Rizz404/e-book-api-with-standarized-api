@@ -1,5 +1,11 @@
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { pgTable, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 const LanguageModel = pgTable(
   "languages",
@@ -7,6 +13,12 @@ const LanguageModel = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     code: varchar({ length: 20 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
+
+    // * Denormalisasi
+    userPreferedLanguageCount: integer("user_prefered_language_count")
+      .notNull()
+      .default(0),
+    bookCount: integer("book_count").notNull().default(0),
   },
   (table) => [uniqueIndex().on(table.code), uniqueIndex().on(table.name)],
 );

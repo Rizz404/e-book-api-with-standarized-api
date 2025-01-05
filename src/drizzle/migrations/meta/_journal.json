@@ -113,6 +113,13 @@
       "when": 1735203640451,
       "tag": "0015_add_picture_to_required_table",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1736057398081,
+      "tag": "0016_add_counter_for_book",
+      "breakpoints": true
     }
   ]
 }
