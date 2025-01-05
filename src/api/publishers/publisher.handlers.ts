@@ -6,6 +6,11 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import {
+  deleteCloudinaryImage,
+  isCloudinaryUrl,
+  isValidUrl,
+} from "../../utils/cloudinary-utils";
 import PublisherModel, {
   InsertPublisherDTO,
   SelectPublisherDTO,
@@ -150,7 +155,13 @@ export const getPublisherById: RequestHandler = async (req, res) => {
 export const updatePublisherById: RequestHandler = async (req, res) => {
   try {
     const { publisherId } = req.params;
-    const publisherData: Partial<InsertPublisherDTO> = req.body;
+    const {
+      name,
+      description,
+      email,
+      picture,
+      website,
+    }: Partial<InsertPublisherDTO> = req.body;
 
     const existingPublisher = await findPublisherByIdService(publisherId);
 
@@ -158,10 +169,41 @@ export const updatePublisherById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Publisher not found", 404);
     }
 
-    const updatedPublisher = await updatePublisherService(
-      publisherId,
-      publisherData,
-    );
+    // * Handle picture update
+    let pictureUrl = existingPublisher.picture;
+
+    // * Jika ada file upload baru
+    if (req.file?.cloudinary) {
+      // * Hapus image lama dari Cloudinary jika itu adalah Cloudinary image
+      if (
+        existingPublisher.picture &&
+        isCloudinaryUrl(existingPublisher.picture)
+      ) {
+        console.log("Deleting old profile picture:", existingPublisher.picture);
+        await deleteCloudinaryImage(existingPublisher.picture);
+      }
+      pictureUrl = req.file.cloudinary.secure_url;
+    }
+    // * Jika ada URL string baru yang valid
+    else if (picture && isValidUrl(picture)) {
+      if (
+        existingPublisher.picture &&
+        isCloudinaryUrl(existingPublisher.picture) &&
+        !isCloudinaryUrl(picture)
+      ) {
+        console.log("Deleting old profile picture:", existingPublisher.picture);
+        await deleteCloudinaryImage(existingPublisher.picture);
+      }
+      pictureUrl = picture;
+    }
+
+    const updatedPublisher = await updatePublisherService(publisherId, {
+      name,
+      description,
+      email,
+      picture: pictureUrl,
+      website,
+    });
 
     createSuccessResponse(res, updatedPublisher);
   } catch (error) {

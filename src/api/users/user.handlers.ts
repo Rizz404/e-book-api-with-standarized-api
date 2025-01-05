@@ -232,21 +232,26 @@ export const updateCurrentUser: RequestHandler = async (req, res) => {
         existingUser.profilePicture &&
         isCloudinaryUrl(existingUser.profilePicture)
       ) {
-        const publicId = getPublicIdFromUrl(existingUser.profilePicture);
-        await deleteCloudinaryImage(publicId);
+        console.log(
+          "Deleting old profile picture:",
+          existingUser.profilePicture,
+        );
+        await deleteCloudinaryImage(existingUser.profilePicture);
       }
       profilePictureUrl = req.file.cloudinary.secure_url;
     }
     // * Jika ada URL string baru yang valid
     else if (profilePicture && isValidUrl(profilePicture)) {
-      // * Hapus image lama dari Cloudinary jika perlu
       if (
         existingUser.profilePicture &&
         isCloudinaryUrl(existingUser.profilePicture) &&
-        !isCloudinaryUrl(profilePicture) // * Pastikan URL baru bukan dari Cloudinary
+        !isCloudinaryUrl(profilePicture)
       ) {
-        const publicId = getPublicIdFromUrl(existingUser.profilePicture);
-        await deleteCloudinaryImage(publicId);
+        console.log(
+          "Deleting old profile picture:",
+          existingUser.profilePicture,
+        );
+        await deleteCloudinaryImage(existingUser.profilePicture);
       }
       profilePictureUrl = profilePicture;
     }

@@ -33,6 +33,7 @@ router
   .patch(
     authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),
+    uploadSingle("picture", "publishers"),
     updatePublisherById,
   )
   .delete(

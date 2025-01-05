@@ -6,6 +6,11 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import {
+  deleteCloudinaryImage,
+  isCloudinaryUrl,
+  isValidUrl,
+} from "../../utils/cloudinary-utils";
 import GenreModel, { InsertGenreDTO, SelectGenreDTO } from "./genre.model";
 import {
   createGenreService,
@@ -124,7 +129,7 @@ export const getGenreById: RequestHandler = async (req, res) => {
 export const updateGenreById: RequestHandler = async (req, res) => {
   try {
     const { genreId } = req.params;
-    const genreData: Partial<InsertGenreDTO> = req.body;
+    const { name, description, picture }: Partial<InsertGenreDTO> = req.body;
 
     const existingGenre = await findGenreByIdService(genreId);
 
@@ -132,7 +137,36 @@ export const updateGenreById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Genre not found", 404);
     }
 
-    const updatedGenre = await updateGenreService(genreId, genreData);
+    // * Handle picture update
+    let pictureUrl = existingGenre.picture;
+
+    // * Jika ada file upload baru
+    if (req.file?.cloudinary) {
+      // * Hapus image lama dari Cloudinary jika itu adalah Cloudinary image
+      if (existingGenre.picture && isCloudinaryUrl(existingGenre.picture)) {
+        console.log("Deleting old profile picture:", existingGenre.picture);
+        await deleteCloudinaryImage(existingGenre.picture);
+      }
+      pictureUrl = req.file.cloudinary.secure_url;
+    }
+    // * Jika ada URL string baru yang valid
+    else if (picture && isValidUrl(picture)) {
+      if (
+        existingGenre.picture &&
+        isCloudinaryUrl(existingGenre.picture) &&
+        !isCloudinaryUrl(picture)
+      ) {
+        console.log("Deleting old profile picture:", existingGenre.picture);
+        await deleteCloudinaryImage(existingGenre.picture);
+      }
+      pictureUrl = picture;
+    }
+
+    const updatedGenre = await updateGenreService(genreId, {
+      name,
+      description,
+      picture: pictureUrl,
+    });
 
     createSuccessResponse(res, updatedGenre);
   } catch (error) {

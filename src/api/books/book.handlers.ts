@@ -27,19 +27,24 @@ import {
   updateBookService,
 } from "./book.services";
 
+// Definisi tipe untuk request files
 interface CustomRequestFiles {
   fileUrl?: Express.Multer.File[];
   bookPictures?: Express.Multer.File[];
 }
 
+// Definisi tipe untuk request body
+interface CreateBookRequestBody extends InsertBookDTO {
+  bookGenreIds: string[];
+  fileUrl?: string;
+  bookPictures?: string | string[];
+}
 // *==========*==========*==========POST==========*==========*==========*
 export const createBook: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const bookData: InsertBookDTO & {
-      bookGenreIds: string[];
-      bookPictures: string[];
-    } = req.body;
+    const bookData = req.body as CreateBookRequestBody;
+    const files = (req.files as CustomRequestFiles) || {};
 
     if (!userId) {
       return createErrorResponse(
@@ -49,21 +54,27 @@ export const createBook: RequestHandler = async (req, res) => {
       );
     }
 
+    if (bookData.bookGenreIds === null || bookData.bookGenreIds.length <= 0) {
+      return createErrorResponse(res, "Genre is required", 400);
+    }
+
     console.log("req.files:", req.files);
     console.log("req.body:", req.body);
 
-    const files = (req.files as CustomRequestFiles) || {};
-
+    // * Handle fileUrl (PDF file)
     let fileUrl: string | undefined;
-
     if (bookData.fileUrl) {
+      // * Jika client mengirim string URL
       fileUrl = bookData.fileUrl;
-    } else if (files.fileUrl && files.fileUrl.length > 0) {
-      fileUrl = files.fileUrl[0]?.cloudinary?.secure_url;
+    } else if (files.fileUrl?.[0]?.cloudinary?.secure_url) {
+      // * Jika client mengirim file
+      fileUrl = files.fileUrl[0].cloudinary.secure_url;
     }
 
+    // * Handle bookPictures
     const bookPictures: string[] = [];
 
+    // * Tambahkan URL yang dikirim sebagai string
     if (bookData.bookPictures) {
       const stringPictures = Array.isArray(bookData.bookPictures)
         ? bookData.bookPictures
@@ -71,35 +82,47 @@ export const createBook: RequestHandler = async (req, res) => {
       bookPictures.push(...stringPictures);
     }
 
-    if (files.bookPictures && files.bookPictures.length > 0) {
-      files.bookPictures.forEach((file) => {
-        if (file.cloudinary) {
-          bookPictures.push(file.cloudinary.secure_url);
-        }
-      });
+    // * Tambahkan URL dari file yang diupload
+    if (files.bookPictures && files.bookPictures?.length > 0) {
+      const uploadedPictureUrls = files.bookPictures
+        .filter((file) => file.cloudinary?.secure_url)
+        .map((file) => file.cloudinary!.secure_url);
+      bookPictures.push(...uploadedPictureUrls);
     }
 
+    // * Validasi jumlah gambar
     if (bookPictures.length > 7) {
-      return createErrorResponse(res, "Max pictures is 7", 400);
+      return createErrorResponse(res, "Maksimal 7 gambar diperbolehkan", 400);
     }
 
+    // * Buat buku baru
     const newBook = await createBookService({
       ...bookData,
       fileUrl,
       sellerId: userId,
     });
 
-    if (bookPictures.length > 0) {
-      const bookPictureDTOs: SelectBookPictureDTO[] = bookPictures.map(
-        (url) => ({
+    // * Simpan genre
+    if (bookData.bookGenreIds?.length > 0) {
+      await createBookGenresService(
+        bookData.bookGenreIds.map((genreId) => ({
           bookId: newBook.id,
-          url,
-        }),
+          genreId,
+        })),
       );
-      await createBookPicturesService(bookPictureDTOs);
     }
 
-    createSuccessResponse(res, newBook, "Book created successfully", 201);
+    // * Simpan gambar
+    if (bookPictures.length > 0) {
+      await createBookPicturesService(
+        bookPictures.map((url) => ({
+          bookId: newBook.id,
+          url,
+        })),
+      );
+    }
+
+    createSuccessResponse(res, newBook, "Buku berhasil dibuat", 201);
   } catch (error) {
     createErrorResponse(res, error);
   }

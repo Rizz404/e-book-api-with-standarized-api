@@ -7,9 +7,17 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import {
+  deleteCloudinaryImage,
+  isCloudinaryUrl,
+  isValidUrl,
+} from "../../utils/cloudinary-utils";
 import { addFilters } from "../../utils/query.utils";
 import BookModel from "../books/book.model";
-import { findBooksByFiltersService } from "../books/book.services";
+import {
+  findBookByIdService,
+  findBooksByFiltersService,
+} from "../books/book.services";
 import { findUserByIdService } from "../users/user.services";
 import BookPictureModel, {
   InsertBookPictureDTO,
@@ -22,11 +30,21 @@ import {
   findBookPicturesByBookIdService,
 } from "./book-picture.services";
 
-// *==========*==========*==========POST==========*==========*==========*
+interface CustomRequestFiles {
+  bookPictures?: Express.Multer.File[];
+}
+
+// * *==========*==========*==========POST==========*==========*==========*
 export const addBookPictures: RequestHandler = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const bookPicturesData: InsertBookPictureDTO[] = req.body;
+    const {
+      bookId,
+      bookPictures: bookPictureUrls = [],
+    }: {
+      bookId: string;
+      bookPictures?: string[];
+    } = req.body;
 
     if (!userId) {
       return createErrorResponse(
@@ -36,29 +54,70 @@ export const addBookPictures: RequestHandler = async (req, res) => {
       );
     }
 
-    const userBooks = await findBooksByFiltersService("10", 0, {
-      sellerId: userId,
-    });
-    const userBookIds = userBooks.books.map((book) => book.id);
+    const book = await findBookByIdService(bookId);
 
-    const invalidBookIds = bookPicturesData
-      .map((picture) => picture.bookId)
-      .filter((bookId) => !userBookIds.includes(bookId));
+    if (!book) {
+      return createErrorResponse(res, "Book not found", 404);
+    }
 
-    if (invalidBookIds.length > 0) {
+    if (book.sellerId !== userId) {
       return createErrorResponse(
         res,
-        `You do not own the following books: ${invalidBookIds.join(", ")}`,
+        "You don't have permission to add book pictures",
         403,
       );
     }
 
-    const newBookPicture = await createBookPicturesService(bookPicturesData);
+    // * Get existing pictures count
+    const { bookPictures: existingPictures } =
+      await findBookPicturesByBookIdService(bookId, "100", 0);
+
+    // * Collect all URLs (from both uploaded files and provided URLs)
+    const newPictureUrls: string[] = [];
+
+    // * Handle uploaded files
+    const files = (req.files as CustomRequestFiles)?.bookPictures || [];
+    files.forEach((file) => {
+      if (file.cloudinary?.secure_url) {
+        newPictureUrls.push(file.cloudinary.secure_url);
+      }
+    });
+
+    // * Handle provided URLs
+    bookPictureUrls.forEach((url) => {
+      if (isValidUrl(url)) {
+        newPictureUrls.push(url);
+      }
+    });
+
+    // * Check total pictures limit
+    const totalPictures = existingPictures.length + newPictureUrls.length;
+    if (totalPictures > 7) {
+      // * Delete uploaded pictures if limit exceeded
+      for (const url of newPictureUrls) {
+        if (isCloudinaryUrl(url)) {
+          await deleteCloudinaryImage(url);
+        }
+      }
+      return createErrorResponse(
+        res,
+        "Maximum 7 pictures allowed per book",
+        400,
+      );
+    }
+
+    // * Create book pictures
+    const bookPictureDtos = newPictureUrls.map((url) => ({
+      bookId,
+      url,
+    }));
+
+    const newBookPictures = await createBookPicturesService(bookPictureDtos);
 
     createSuccessResponse(
       res,
-      newBookPicture,
-      "BookPictures created successfully",
+      newBookPictures,
+      "Book pictures added successfully",
       201,
     );
   } catch (error) {
@@ -66,7 +125,7 @@ export const addBookPictures: RequestHandler = async (req, res) => {
   }
 };
 
-// *==========*==========*==========GET==========*==========*==========*
+// * *==========*==========*==========GET==========*==========*==========*
 export const getBookPicturesByBookId: RequestHandler = async (req, res) => {
   try {
     const { bookId } = req.params;
@@ -76,7 +135,7 @@ export const getBookPicturesByBookId: RequestHandler = async (req, res) => {
         limit?: string;
       };
 
-    // * Validasi dan parsing `page` dan `limit` pake function
+    // * * Validasi dan parsing `page` dan `limit` pake function
     const { currentPage, itemsPerPage, offset } = parsePagination(page, limit);
 
     const { bookPictures, totalItems } = await findBookPicturesByBookIdService(
@@ -115,9 +174,9 @@ export const getBookPictureById: RequestHandler = async (req, res) => {
   }
 };
 
-// *==========*==========*==========PATCH==========*==========*==========*
+// * *==========*==========*==========PATCH==========*==========*==========*
 
-// *==========*==========*==========DELETE==========*==========*==========*
+// * *==========*==========*==========DELETE==========*==========*==========*
 export const deleteBookPictureById: RequestHandler = async (req, res) => {
   try {
     const user = req.user;
@@ -136,15 +195,40 @@ export const deleteBookPictureById: RequestHandler = async (req, res) => {
     const existingBookPicture = await findBookPictureByIdService(bookPictureId);
 
     if (!existingBookPicture) {
-      return createErrorResponse(res, "BookPicture not found", 404);
+      return createErrorResponse(res, "Book picture not found", 404);
     }
 
-    if (existingBookPicture.books?.sellerId !== currentUser.id) {
+    if (existingBookPicture.book?.sellerId !== currentUser.id) {
       return createErrorResponse(
         res,
         "You don't have permission to delete this book picture",
-        404,
+        403,
       );
+    }
+
+    // * Check if this is the last picture
+    const { bookPictures } = await findBookPicturesByBookIdService(
+      existingBookPicture.bookId,
+      "100",
+      0,
+    );
+
+    if (bookPictures.length <= 1) {
+      return createErrorResponse(
+        res,
+        "Cannot delete the last picture. Book must have at least one picture",
+        400,
+      );
+    }
+
+    // * Delete from Cloudinary if it's a Cloudinary image
+    if (isCloudinaryUrl(existingBookPicture.url)) {
+      try {
+        await deleteCloudinaryImage(existingBookPicture.url);
+      } catch (error) {
+        console.error("Error deleting image from Cloudinary:", error);
+        // * Continue with deletion from database even if Cloudinary deletion fails
+      }
     }
 
     const deletedBookPicture = await deleteBookPictureService(bookPictureId);
@@ -152,7 +236,7 @@ export const deleteBookPictureById: RequestHandler = async (req, res) => {
     if (!deletedBookPicture) {
       return createErrorResponse(
         res,
-        "Something cause bookPicture not deleted properly",
+        "Something caused book picture not to be deleted properly",
         400,
       );
     }
@@ -160,7 +244,7 @@ export const deleteBookPictureById: RequestHandler = async (req, res) => {
     createSuccessResponse(
       res,
       undefined,
-      `Successfully deleted bookPicture with id ${deletedBookPicture.id}`,
+      `Successfully deleted book picture with id ${deletedBookPicture.id}`,
     );
   } catch (error) {
     createErrorResponse(res, error);

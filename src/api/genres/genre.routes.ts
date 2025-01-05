@@ -29,7 +29,12 @@ router.get("/search", getGenresLikeColumn);
 router
   .route("/:genreId")
   .get(getGenreById)
-  .patch(authMiddleware(), roleValidationMiddleware(["ADMIN"]), updateGenreById)
+  .patch(
+    authMiddleware(),
+    roleValidationMiddleware(["ADMIN"]),
+    uploadSingle("picture", "genres"),
+    updateGenreById,
+  )
   .delete(
     authMiddleware(),
     roleValidationMiddleware(["ADMIN"]),

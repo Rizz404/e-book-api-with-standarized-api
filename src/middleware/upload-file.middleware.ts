@@ -127,17 +127,13 @@ const uploadFields =
       }
 
       try {
-        if (req.files && req.files instanceof Object) {
-          const uploadPromises: Promise<UploadApiResponse>[] = [];
-
-          for (const field of fields) {
-            const files = (req.files as Record<string, Express.Multer.File[]>)[
-              field.name
-            ];
-
-            if (files && files.length > 0) {
-              uploadPromises.push(
-                ...files.map((file) =>
+        if (req.files && typeof req.files === "object") {
+          // Proses setiap field satu per satu
+          for (const [fieldName, files] of Object.entries(req.files)) {
+            if (Array.isArray(files) && files.length > 0) {
+              // Upload semua file dalam field ini ke Cloudinary
+              const results = await Promise.all(
+                files.map((file) =>
                   uploadToCloudinary(
                     file.buffer,
                     folder,
@@ -145,22 +141,11 @@ const uploadFields =
                   ),
                 ),
               );
-            }
-          }
 
-          if (uploadPromises.length > 0) {
-            const results = await Promise.all(uploadPromises);
-
-            for (const field of fields) {
-              const files = (
-                req.files as Record<string, Express.Multer.File[]>
-              )[field.name];
-
-              if (files && files.length > 0) {
-                files.forEach((file, index) => {
-                  file.cloudinary = results.shift();
-                });
-              }
+              // Assign hasil cloudinary ke masing-masing file
+              files.forEach((file, index) => {
+                file.cloudinary = results[index];
+              });
             }
           }
         }

@@ -1,16 +1,25 @@
-import { count, desc, eq, SQL, SQLWrapper } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
 import BookModel from "../books/book.model";
-import BookPictureModel, {
-  InsertBookPictureDTO,
-  SelectBookPictureDTO,
-} from "./book-picture.model";
+import BookPictureModel, { SelectBookPictureDTO } from "./book-picture.model";
 
 export const createBookPicturesService = async (
   bookPictureData: SelectBookPictureDTO[],
 ) => {
   return await db.insert(BookPictureModel).values(bookPictureData).returning();
+};
+
+const bookPictureResponse = {
+  id: BookPictureModel.id,
+  bookId: BookPictureModel.bookId,
+  url: BookPictureModel.url,
+  isCover: BookPictureModel.isCover,
+  createdAt: BookPictureModel.createdAt,
+  updatedAt: BookPictureModel.updatedAt,
+  book: {
+    sellerId: BookModel.sellerId,
+  },
 };
 
 export const findBookPicturesByBookIdService = async (
@@ -21,12 +30,12 @@ export const findBookPicturesByBookIdService = async (
   const totalItems =
     (
       await db
-        .select({ count: count() })
+        .select({ count: sql`COUNT(DISTINCT ${BookPictureModel.id})` })
         .from(BookPictureModel)
         .where(eq(BookPictureModel.bookId, bookId))
     )[0].count || 0;
   const bookPictures = await db
-    .select()
+    .select(bookPictureResponse)
     .from(BookPictureModel)
     .leftJoin(BookModel, eq(BookPictureModel.bookId, BookModel.id))
     .where(eq(BookPictureModel.bookId, bookId))
@@ -34,13 +43,13 @@ export const findBookPicturesByBookIdService = async (
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems, bookPictures };
+  return { totalItems: +totalItems, bookPictures };
 };
 
 export const findBookPictureByIdService = async (id: string) => {
   return (
     await db
-      .select()
+      .select(bookPictureResponse)
       .from(BookPictureModel)
       .leftJoin(BookModel, eq(BookPictureModel.bookId, BookModel.id))
       .where(eq(BookPictureModel.id, id))
@@ -56,7 +65,7 @@ export const findBookPictureByColumnService = async <
 ) => {
   return (
     await db
-      .select()
+      .select(bookPictureResponse)
       .from(BookPictureModel)
       .leftJoin(BookModel, eq(BookPictureModel.bookId, BookModel.id))
       .where(eq(BookPictureModel[column], value!))

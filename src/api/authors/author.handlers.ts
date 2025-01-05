@@ -6,6 +6,11 @@ import {
   createPaginatedResponse,
   createSuccessResponse,
 } from "../../utils/api-response.utils";
+import {
+  deleteCloudinaryImage,
+  isCloudinaryUrl,
+  isValidUrl,
+} from "../../utils/cloudinary-utils";
 import AuthorModel, { InsertAuthorDTO, SelectAuthorDTO } from "./author.model";
 import {
   createAuthorService,
@@ -156,7 +161,13 @@ export const getAuthorById: RequestHandler = async (req, res) => {
 export const updateAuthorById: RequestHandler = async (req, res) => {
   try {
     const { authorId } = req.params;
-    const authorData: Partial<InsertAuthorDTO> = req.body;
+    const {
+      name,
+      biography,
+      birthDate,
+      deathDate,
+      profilePicture,
+    }: Partial<InsertAuthorDTO> = req.body;
 
     const existingAuthor = await findAuthorByIdService(authorId);
 
@@ -164,7 +175,47 @@ export const updateAuthorById: RequestHandler = async (req, res) => {
       return createErrorResponse(res, "Author not found", 404);
     }
 
-    const updatedAuthor = await updateAuthorService(authorId, authorData);
+    // * Handle profile picture update
+    let profilePictureUrl = existingAuthor.profilePicture;
+
+    // * Jika ada file upload baru
+    if (req.file?.cloudinary) {
+      // * Hapus image lama dari Cloudinary jika itu adalah Cloudinary image
+      if (
+        existingAuthor.profilePicture &&
+        isCloudinaryUrl(existingAuthor.profilePicture)
+      ) {
+        console.log(
+          "Deleting old profile profilePicture:",
+          existingAuthor.profilePicture,
+        );
+        await deleteCloudinaryImage(existingAuthor.profilePicture);
+      }
+      profilePictureUrl = req.file.cloudinary.secure_url;
+    }
+    // * Jika ada URL string baru yang valid
+    else if (profilePicture && isValidUrl(profilePicture)) {
+      if (
+        existingAuthor.profilePicture &&
+        isCloudinaryUrl(existingAuthor.profilePicture) &&
+        !isCloudinaryUrl(profilePicture)
+      ) {
+        console.log(
+          "Deleting old profile profilePicture:",
+          existingAuthor.profilePicture,
+        );
+        await deleteCloudinaryImage(existingAuthor.profilePicture);
+      }
+      profilePictureUrl = profilePicture;
+    }
+
+    const updatedAuthor = await updateAuthorService(authorId, {
+      name,
+      biography,
+      birthDate,
+      deathDate,
+      profilePicture: profilePictureUrl,
+    });
 
     createSuccessResponse(res, updatedAuthor);
   } catch (error) {
