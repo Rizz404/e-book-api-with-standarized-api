@@ -80,7 +80,7 @@ export const updateGenreService = async (
   genreId: string,
   genreData: Partial<InsertGenreDTO>,
 ) => {
-  const { name, description } = genreData;
+  const { name, description, picture } = genreData;
 
   return (
     await db
@@ -88,6 +88,7 @@ export const updateGenreService = async (
       .set({
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
+        ...(picture !== undefined && { picture }),
       })
       .where(eq(GenreModel.id, genreId))
       .returning()

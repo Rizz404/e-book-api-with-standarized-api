@@ -21,15 +21,9 @@ const seedBooks = async () => {
     const genres = await db.select().from(GenreModel);
     const pictures = [
       "https://i.pinimg.com/236x/28/a5/38/28a53818427467bceef016911ed494b4.jpg",
-      "https://i.pinimg.com/236x/3a/dc/ff/3adcff7a670cde2ea2bb8ceadb6cceac.jpg",
       "https://i.pinimg.com/236x/bf/fa/8e/bffa8e997ba9f1873ec570000ae713c6.jpg",
-      "https://i.pinimg.com/474x/b0/fe/07/b0fe079f98dcb49c0b1c3e18abacdab6.jpg",
-      "https://i.pinimg.com/236x/28/27/77/2827771068d374a49d2c0fa49d30967d.jpg",
-      "https://i.pinimg.com/236x/80/94/4c/80944c40ae2a175a14b0e1ac5f7ec21d.jpg",
       "https://i.pinimg.com/474x/6d/d9/f4/6dd9f4f17cfb7b675b6571d18c78506e.jpg",
       "https://i.pinimg.com/236x/52/d3/4e/52d34ede46b02cc70c1f5eb4eec2e59d.jpg",
-      "https://i.pinimg.com/236x/ca/9f/51/ca9f51799b5dd4625beb7cd3549e65cf.jpg",
-      "https://i.pinimg.com/474x/c8/40/4a/c8404a3376fac98a20099a9d6fb650fe.jpg",
       "https://i.pinimg.com/236x/65/20/9a/65209aff43fa12661a3359a67e201d30.jpg",
       "https://i.pinimg.com/236x/f3/81/86/f38186a42ba993765389b1f083e84c0d.jpg",
       "https://i.pinimg.com/236x/f2/a0/71/f2a07180cf5c57e2494704b39b73252c.jpg",

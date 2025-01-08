@@ -87,7 +87,7 @@ export const updatePublisherService = async (
   publisherId: string,
   publisherData: Partial<InsertPublisherDTO>,
 ) => {
-  const { name, email, description, website } = publisherData;
+  const { name, email, description, website, picture } = publisherData;
 
   return (
     await db
@@ -97,6 +97,7 @@ export const updatePublisherService = async (
         ...(email !== undefined && { email }),
         ...(description !== undefined && { description }),
         ...(website !== undefined && { website }),
+        ...(picture !== undefined && { picture }),
       })
       .where(eq(PublisherModel.id, publisherId))
       .returning()
