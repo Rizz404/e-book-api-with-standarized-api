@@ -7,7 +7,7 @@ export const validatePassword = async (password: string, hash: string) => {
 
 export const generateAccessToken = (userId: string) => {
   return jwt.sign({ userId }, process.env.JWT_ACCESS_TOKEN as string, {
-    expiresIn: "1d",
+    expiresIn: "7d",
   });
 };
 
