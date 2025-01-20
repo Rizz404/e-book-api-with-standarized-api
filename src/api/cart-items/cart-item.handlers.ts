@@ -79,7 +79,7 @@ export const createUserCartItem: RequestHandler = async (req, res) => {
 
     const newCartItem = await createCartItemService({
       ...cartItemData,
-      quantity: cartItemData.quantity ?? 0,
+      quantity: cartItemData.quantity ?? 1,
       cartId: userCart.carts.id,
     });
 
@@ -224,7 +224,7 @@ export const updateCartItemById: RequestHandler = async (req, res) => {
     }
 
     if (
-      existingCartItem.cart_items.cartId !== userCart.carts.id &&
+      existingCartItem.cartId !== userCart.carts.id &&
       currentUser.role !== "ADMIN"
     ) {
       return createErrorResponse(
@@ -236,7 +236,6 @@ export const updateCartItemById: RequestHandler = async (req, res) => {
 
     const updatedCartItem = await updateCartItemService(
       cartItemId,
-      user.id,
       cartItemData,
     );
 
@@ -279,7 +278,7 @@ export const deleteCartItemById: RequestHandler = async (req, res) => {
     }
 
     if (
-      existingCartItem.cart_items.cartId !== userCart.carts.id &&
+      existingCartItem.cartId !== userCart.carts.id &&
       currentUser.role !== "ADMIN"
     ) {
       return createErrorResponse(

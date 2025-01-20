@@ -10,6 +10,22 @@ import CartItemModel, {
   SelectCartItemDTO,
 } from "../cart-items/cart-item.model";
 
+const cartItemResponse = {
+  id: CartItemModel.id,
+  cartId: CartItemModel.cartId,
+  bookId: CartItemModel.bookId,
+  priceAtCart: CartItemModel.priceAtCart,
+  quantity: CartItemModel.quantity,
+  createdAt: CartItemModel.createdAt,
+  updatedAt: CartItemModel.updatedAt,
+  book: {
+    title: BookModel.title,
+    description: BookModel.description,
+    stock: BookModel.stock,
+    price: BookModel.price,
+  },
+};
+
 export const createCartItemService = async (
   cartItemData: InsertCartItemDTO,
 ) => {
@@ -38,12 +54,12 @@ export const findCartItemsByCartId = async (
   const totalItems =
     (
       await db
-        .select({ count: count() })
+        .select({ count: sql`COUNT(DISTINCT ${CartItemModel.id})` })
         .from(CartItemModel)
         .where(eq(CartItemModel.cartId, cartId))
     )[0].count || 0;
   const cartItems = await db
-    .select()
+    .select(cartItemResponse)
     .from(CartItemModel)
     .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
     .where(eq(CartItemModel.cartId, cartId))
@@ -51,7 +67,7 @@ export const findCartItemsByCartId = async (
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems, cartItems };
+  return { totalItems: +totalItems, cartItems };
 };
 
 export const findCartItemsLikeColumnService = async (
@@ -68,7 +84,7 @@ export const findCartItemsLikeColumnService = async (
         .where(ilike(column, `%${value}%`))
     )[0].count || 0;
   const cartItems = await db
-    .select()
+    .select(cartItemResponse)
     .from(CartItemModel)
     .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
     .where(ilike(column, `%${value}%`))
@@ -82,7 +98,7 @@ export const findCartItemsLikeColumnService = async (
 export const findCartItemByIdService = async (id: string) => {
   return (
     await db
-      .select()
+      .select(cartItemResponse)
       .from(CartItemModel)
       .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
       .where(eq(CartItemModel.id, id))
@@ -98,7 +114,7 @@ export const findCartItemByColumnService = async <
 ) => {
   return (
     await db
-      .select()
+      .select(cartItemResponse)
       .from(CartItemModel)
       .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
       .where(eq(CartItemModel[column], value!))
@@ -108,14 +124,13 @@ export const findCartItemByColumnService = async <
 
 export const updateCartItemService = async (
   cartItemId: string,
-  sellerId: string,
   cartItemData: Partial<InsertCartItemDTO>,
 ) => {
-  const { quantity } = cartItemData;
-  let newSlug: string | undefined;
+  const { quantity, priceAtCart } = cartItemData;
 
   const updateData = {
     ...(quantity !== undefined && { quantity }),
+    ...(priceAtCart !== undefined && { priceAtCart }),
   };
 
   if (Object.keys(updateData).length === 0) {
