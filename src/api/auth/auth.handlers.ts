@@ -7,6 +7,7 @@ import {
   createSuccessResponse,
 } from "../../utils/api-response.utils";
 import { signUpEmailResponse } from "../../utils/email-generator.utils";
+import { createCartService } from "../cart/cart.services";
 import { createUserProfileService } from "../user-profile/user-profile.services";
 import { InsertUserDTO, SelectUserDTO } from "../users/user.model";
 import {
@@ -37,8 +38,19 @@ export const signUp: RequestHandler = async (req, res) => {
 
     const newUser = await createUserService({ username, email, password });
 
+    let userRelatedTableMessage: string | null = null;
+
+    // todo: Ganti solusi dengan yang lebih baik
     if (newUser) {
-      await createUserProfileService(newUser.id);
+      const createdProfile = await createUserProfileService(newUser.id);
+      const createdCart = await createCartService({ userId: newUser.id });
+
+      if (createdProfile && createdCart) {
+        userRelatedTableMessage =
+          "Successfully created user related table data";
+      } else {
+        userRelatedTableMessage = "Profile or cart not created";
+      }
     }
 
     const token = generateEmailConfirmationToken(newUser.id, newUser.email);
@@ -61,7 +73,7 @@ export const signUp: RequestHandler = async (req, res) => {
     createSuccessResponse(
       res,
       undefined,
-      "Check your email and confirm your email",
+      `Check your email and confirm your email\n ${userRelatedTableMessage}`,
       201,
     );
   } catch (error) {
