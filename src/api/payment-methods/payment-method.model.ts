@@ -12,7 +12,7 @@ const PaymentMethodModel = pgTable("payment_methods", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({ length: 50 }).notNull(),
   description: text(),
-  price: decimal({ precision: 10, scale: 2 })
+  fee: decimal({ precision: 10, scale: 2 })
     .notNull()
     .default("0.00")
     .$type<number>(),

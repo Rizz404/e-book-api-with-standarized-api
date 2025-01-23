@@ -141,7 +141,7 @@ export const createOrderService = async (
         totalShippingServicesFee: shippingService.price,
         adminFee,
         discount,
-        paymentMethodFee: paymentMethod.price,
+        paymentMethodFee: paymentMethod.fee,
         paymentReference: paymentMethod.name,
         subtotalPrice,
         totalPrice,

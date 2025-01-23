@@ -120,6 +120,13 @@
       "when": 1736057398081,
       "tag": "0016_add_counter_for_book",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1737646576571,
+      "tag": "0017_change_price_to_fee_payment_method",
+      "breakpoints": true
     }
   ]
 }

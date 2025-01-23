@@ -1,0 +1,1 @@
+ALTER TABLE "payment_methods" RENAME COLUMN "price" TO "fee";
