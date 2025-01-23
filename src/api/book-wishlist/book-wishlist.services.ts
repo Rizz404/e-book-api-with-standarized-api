@@ -2,7 +2,7 @@ import { and, count, desc, eq, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
 import AuthorModel from "../authors/author.model";
-import BookGenreModel from "../book-genre/book-genre.model";
+import BookGenreModel from "../book-genres/book-genre.model";
 import BookPictureModel from "../book-pictures/book-picture.model";
 import BookModel from "../books/book.model";
 import { bookResponse, getIsWishlisted } from "../books/book.services";

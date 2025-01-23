@@ -8,8 +8,8 @@ import {
   createSuccessResponse,
 } from "../../utils/api-response.utils";
 import { addFilters } from "../../utils/query.utils";
-import { InsertBookGenreDTO } from "../book-genre/book-genre.model";
-import { createBookGenresService } from "../book-genre/book-genre.services";
+import { InsertBookGenreDTO } from "../book-genres/book-genre.model";
+import { createBookGenresService } from "../book-genres/book-genre.services";
 import {
   InsertBookPictureDTO,
   SelectBookPictureDTO,

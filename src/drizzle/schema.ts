@@ -3,7 +3,7 @@
 
 import AuthorFollowModel from "../api/author-follows/author-follow.model";
 import AuthorModel from "../api/authors/author.model";
-import BookGenreModel from "../api/book-genre/book-genre.model";
+import BookGenreModel from "../api/book-genres/book-genre.model";
 import BookPictureModel from "../api/book-pictures/book-picture.model";
 import BookReviewModel from "../api/book-reviews/book-review.model";
 import BookWishlistModel from "../api/book-wishlist/book-wishlist.model";
