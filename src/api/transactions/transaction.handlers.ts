@@ -17,6 +17,7 @@ import {
   findTransactionByColumnService,
   findTransactionByIdService,
   findTransactionsByFiltersService,
+  testZendit,
   updateTransactionService,
 } from "./transaction.services";
 
@@ -123,6 +124,41 @@ export const deleteTransactionById: RequestHandler = async (req, res) => {
       `Successfully deleted transaction with id ${deletedTransaction.id}`,
     );
   } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
+
+export const xenditTest: RequestHandler = async (req, res) => {
+  try {
+    // Destructure with default values and type checking
+    const {
+      amount,
+      invoiceDuration = "172800", // Default value
+      externalId,
+      description,
+      currency = "IDR", // Default value
+      reminderTime = 1,
+      payerEmail,
+    } = req.body;
+
+    // Validate required fields
+    if (!amount || !externalId || !description || !payerEmail) {
+      return createErrorResponse(res, new Error("Missing required fields"));
+    }
+
+    const response = await testZendit({
+      amount,
+      invoiceDuration,
+      externalId,
+      description,
+      currency,
+      reminderTime,
+      payerEmail,
+    });
+
+    createSuccessResponse(res, response, "Successfully created Xendit invoice");
+  } catch (error) {
+    console.error("Xendit Test Error:", error);
     createErrorResponse(res, error);
   }
 };

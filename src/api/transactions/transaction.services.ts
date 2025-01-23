@@ -8,6 +8,8 @@ import TransactionModel, {
   SelectTransactionDTO,
 } from "../transactions/transaction.model";
 import UserModel from "../users/user.model";
+import { CreateInvoiceRequest, Invoice } from "xendit-node/invoice/models";
+import { xenditInvoiceClient } from "../../config/xendit-config";
 
 export const transactionResponse = {
   id: TransactionModel.id,
@@ -146,4 +148,23 @@ export const deleteTransactionService = async (transactionId: string) => {
       .where(eq(TransactionModel.id, transactionId))
       .returning()
   )[0];
+};
+
+export const testZendit = async (data: CreateInvoiceRequest) => {
+  try {
+    console.log("Invoice Creation Data:", JSON.stringify(data, null, 2));
+
+    const response = await xenditInvoiceClient.createInvoice({
+      data: {
+        ...data,
+        paymentMethods: ["DANA"],
+      },
+    });
+
+    console.log("Xendit Invoice Response:", JSON.stringify(response, null, 2));
+    return response;
+  } catch (error) {
+    console.error("Xendit Invoice Creation Error:", error);
+    throw error;
+  }
 };

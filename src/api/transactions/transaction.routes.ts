@@ -8,12 +8,15 @@ import {
   getTransactionById,
   getTransactions,
   updateTransactionById,
+  xenditTest,
 } from "./transaction.handlers";
 // import { createTransactionSchema } from "./transaction.validations";
 
 const router = express.Router();
 
 router.route("/").get(authMiddleware(), getTransactions);
+router.route("/test-xendit").post(xenditTest);
+
 router
   .route("/:transactionId")
   .get(getTransactionById)

@@ -385,6 +385,17 @@ export const deleteBookService = async (bookId: string) => {
   )[0];
 };
 
+// * Checkout single book
+// export const bookCheckout = async (
+//   bookId: string,
+//   shippingServiceId: string,
+//   paymentMethodId: string,
+// ) => {
+//   return await db.transaction(async (tx) => {
+
+//   });
+// };
+
 export const getIsWishlisted = (userId?: string) => {
   return {
     isWishlisted: userId
