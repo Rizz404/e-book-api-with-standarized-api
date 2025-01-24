@@ -36,19 +36,39 @@ export const xenditInvoiceWebhook: RequestHandler = async (req, res) => {
     }
     const { external_id: externalId } = payload;
 
+    if (externalId === "invoice_123124123") {
+      return createSuccessResponse(
+        res,
+        undefined,
+        "Testing webhook success",
+        200,
+      );
+    }
+
+    let response;
+
     switch (payload.status) {
       case "PAID":
-        await updateTransactionService(externalId, { status: "COMPLETED" });
+        response = await updateTransactionService(externalId, {
+          status: "COMPLETED",
+        });
         break;
       case "FAILED":
-        await updateTransactionService(externalId, { status: "FAILED" });
+        response = await updateTransactionService(externalId, {
+          status: "FAILED",
+        });
         break;
 
       default:
         break;
     }
 
-    createSuccessResponse(res, undefined, "Webhook received successfully", 200);
+    createSuccessResponse(
+      res,
+      response,
+      "Webhook received successfully and updating transaction base on payload status",
+      200,
+    );
   } catch (error) {
     createErrorResponse(res, error);
   }
