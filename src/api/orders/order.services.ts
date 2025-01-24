@@ -1,6 +1,7 @@
 import { and, between, count, desc, eq, SQL, sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
+import { xenditInvoiceClient } from "../../config/xendit-config";
 import AuthorModel from "../authors/author.model";
 import BookGenreModel from "../book-genres/book-genre.model";
 import BookPictureModel from "../book-pictures/book-picture.model";
@@ -40,30 +41,6 @@ const orderResponse = {
   book: {
     id: BookModel.id,
     title: BookModel.title,
-    // genres: sql`
-    //     json_agg(
-    //       json_build_object('id', ${GenreModel.id}, 'name', ${GenreModel.name})
-    //     )
-    //   `.as("genres"),
-    // bookPictures: sql`
-    //     json_agg(
-    //       json_build_object(
-    //         'id', ${BookPictureModel.id},
-    //         'url', ${BookPictureModel.url},
-    //         'isCover', ${BookPictureModel.isCover}
-    //       )
-    //     )
-    //   `.as("bookPictures"),
-    price: BookModel.price,
-    fileUrl: BookModel.fileUrl,
-    // seller: {
-    //   id: UserModel.id,
-    //   username: UserModel.username,
-    //   email: UserModel.email,
-    //   isVerified: UserModel.isVerified,
-    //   profilePicture: UserModel.profilePicture,
-    // },
-    // language: LanguageModel.name,
   },
   shippingService: {
     id: ShippingServiceModel.id,
@@ -83,61 +60,78 @@ export const createOrderService = async (
 ) => {
   const { userId, bookId, quantity, shippingServiceId } = orderData;
 
-  return await db.transaction(async (tx) => {
-    const [book] = await tx
-      .select()
-      .from(BookModel)
-      .where(eq(BookModel.id, bookId))
-      .limit(1);
+  try {
+    return await db.transaction(async (tx) => {
+      const [user] = await tx
+        .select()
+        .from(UserModel)
+        .where(eq(UserModel.id, userId));
 
-    if (!book) {
-      tx.rollback();
-      throw new Error("Book not found or unavailable.");
-    }
+      if (!user) {
+        throw new Error("User not found or something went wrong.");
+      }
 
-    console.log(`Book in order transaction: ${JSON.stringify(book, null, 2)}`);
+      const [book] = await tx
+        .select()
+        .from(BookModel)
+        .where(eq(BookModel.id, bookId))
+        .limit(1);
 
-    if (quantity > book.stock || book.status !== "AVAILABLE") {
-      tx.rollback();
-      throw new Error("Invalid quantity or book is unavailable.");
-    }
+      if (!book) {
+        throw new Error("Book not found or unavailable.");
+      }
 
-    // Ambil data shipping service
-    const [shippingService] = await tx
-      .select()
-      .from(ShippingServiceModel)
-      .where(eq(ShippingServiceModel.id, shippingServiceId))
-      .limit(1);
+      if (quantity > book.stock || book.status !== "AVAILABLE") {
+        throw new Error("Invalid quantity or book is unavailable.");
+      }
 
-    if (!shippingService) {
-      tx.rollback();
-      throw new Error("Shipping service not found.");
-    }
+      // * Ambil data shipping service
+      const [shippingService] = await tx
+        .select()
+        .from(ShippingServiceModel)
+        .where(eq(ShippingServiceModel.id, shippingServiceId))
+        .limit(1);
 
-    // Ambil data payment method
-    const [paymentMethod] = await tx
-      .select()
-      .from(PaymentMethodModel)
-      .where(eq(PaymentMethodModel.id, paymentMethodId))
-      .limit(1);
+      if (!shippingService) {
+        throw new Error("Shipping service not found.");
+      }
 
-    if (!paymentMethod) {
-      tx.rollback();
-      throw new Error("Payment method not found.");
-    }
+      // * Ambil data payment method
+      const [paymentMethod] = await tx
+        .select()
+        .from(PaymentMethodModel)
+        .where(eq(PaymentMethodModel.id, paymentMethodId))
+        .limit(1);
 
-    // Hitung total harga
-    const subtotalPrice = book.price * quantity;
-    const adminFee = 2500;
-    const discount = 0;
-    const totalPrice = subtotalPrice + adminFee - discount * 100;
+      if (!paymentMethod) {
+        throw new Error("Payment method not found.");
+      }
 
-    // Buat transaksi
-    const [createTransaction] = await tx
-      .insert(TransactionModel)
-      .values({
+      // * Hitung total harga
+      const subtotalPrice = book.price * quantity;
+      const adminFee = 2500;
+      const discount = 0;
+      const totalPrice = subtotalPrice + adminFee - discount * 100;
+
+      // * Buat transaksi
+      const [createTransaction] = await tx
+        .insert(TransactionModel)
+        .values({
+          paymentMethodId: paymentMethod.id,
+          userId: user.id,
+          totalShippingServicesFee: shippingService.price,
+          adminFee,
+          discount,
+          paymentMethodFee: paymentMethod.fee,
+          paymentReference: paymentMethod.name,
+          subtotalPrice,
+          totalPrice,
+        })
+        .returning();
+
+      console.log("Inserting transaction:", {
         paymentMethodId,
-        userId,
+        userId: user.id,
         totalShippingServicesFee: shippingService.price,
         adminFee,
         discount,
@@ -145,37 +139,77 @@ export const createOrderService = async (
         paymentReference: paymentMethod.name,
         subtotalPrice,
         totalPrice,
-      })
-      .returning();
+      });
 
-    if (!createTransaction) {
-      tx.rollback();
-      throw new Error("Failed to create transaction.");
-    }
+      if (!createTransaction) {
+        throw new Error("Failed to create transaction.");
+      }
 
-    // Buat order
-    const [createOrder] = await tx
-      .insert(OrderModel)
-      .values({
-        ...orderData,
-        transactionId: createTransaction.id,
-        totalPrice,
-        priceSold: book.price,
-      })
-      .returning();
+      try {
+        // * Payment gateway (Xendit)
+        const xenditInvoice = await xenditInvoiceClient.createInvoice({
+          data: {
+            amount: totalPrice,
+            externalId: `${user.id}-${Date.now()}`, // Unique ID
+            payerEmail: user.email,
+            currency: "IDR",
+            invoiceDuration: "172800", // 48 hours
+            reminderTime: 1, // Reminder before expiry
+            paymentMethods: [paymentMethod.name],
+            items: [
+              {
+                name: book.title,
+                price: book.price,
+                quantity: quantity,
+                category: "book",
+                referenceId: book.id,
+              },
+            ],
+          },
+        });
 
-    if (!createOrder) {
-      tx.rollback();
-      throw new Error("Failed to create order.");
-    }
+        console.log("Xendit invoice created:", xenditInvoice);
 
-    await tx
-      .update(BookModel)
-      .set({ stock: book.stock - orderData.quantity })
-      .where(eq(BookModel.id, book.id));
+        // * Simpan URL invoice (opsional)
+        await tx
+          .update(TransactionModel)
+          .set({ paymentInvoiceUrl: xenditInvoice.invoiceUrl })
+          .where(eq(TransactionModel.id, createTransaction.id));
+      } catch (error) {
+        console.error("Error creating Xendit invoice:", error);
+        throw new Error("Failed to create invoice with Xendit.");
+      }
 
-    return createOrder;
-  });
+      // * Buat order
+      const [createOrder] = await tx
+        .insert(OrderModel)
+        .values({
+          ...orderData,
+          transactionId: createTransaction.id,
+          totalPrice,
+          priceSold: book.price,
+        })
+        .returning();
+
+      if (!createOrder) {
+        throw new Error("Failed to create order.");
+      }
+
+      // * Update stock buku
+      await tx
+        .update(BookModel)
+        .set({ stock: book.stock - orderData.quantity })
+        .where(eq(BookModel.id, book.id));
+
+      return createOrder;
+    });
+  } catch (error) {
+    console.error("Error in createOrderService:", error);
+
+    throw new Error(
+      JSON.stringify(error) ?? "Something went wrong while creating order.",
+    );
+  }
 };
 
 export const findOrdersByFiltersService = async (
@@ -221,10 +255,10 @@ export const findOrdersByFiltersService = async (
     .from(OrderModel)
     .leftJoin(UserModel, eq(UserModel.id, OrderModel.userId))
     .leftJoin(BookModel, eq(BookModel.id, OrderModel.bookId))
-    // .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
-    // .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
-    // .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
-    // .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
+    // * .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
+    // * .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+    // * .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
+    // * .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
     .leftJoin(
       ShippingServiceModel,
       eq(ShippingServiceModel.id, OrderModel.shippingServiceId),
@@ -245,10 +279,10 @@ export const findOrderByIdService = async (orderId: string) => {
         .from(OrderModel)
         .leftJoin(UserModel, eq(UserModel.id, OrderModel.userId))
         .leftJoin(BookModel, eq(BookModel.id, OrderModel.bookId))
-        // .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
-        // .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
-        // .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
-        // .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
+        // * .leftJoin(BookGenreModel, eq(BookModel.id, BookGenreModel.bookId)) // * Join ke tabel pivot
+        // * .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id)) // * Join ke tabel genre    .leftJoin(GenreModel, eq(BookGenreModel.genreId, GenreModel.id))
+        // * .leftJoin(BookPictureModel, eq(BookModel.id, BookPictureModel.bookId))
+        // * .leftJoin(LanguageModel, eq(BookModel.languageId, LanguageModel.id))
         .leftJoin(
           ShippingServiceModel,
           eq(ShippingServiceModel.id, OrderModel.shippingServiceId),

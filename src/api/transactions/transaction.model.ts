@@ -63,6 +63,7 @@ const TransactionModel = pgTable("transactions", {
     .$type<number>(),
   paymentReference: text("payment_reference"), // * Mungkin nanti tambahin providernya sebagai table
   status: enumPaymentStatus().default("PENDING"),
+  paymentInvoiceUrl: text("payment_invoice_url").notNull().default(""),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()

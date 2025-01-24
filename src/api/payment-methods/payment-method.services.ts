@@ -93,7 +93,7 @@ export const updatePaymentMethodService = async (
   paymentMethodId: string,
   paymentMethodData: Partial<InsertPaymentMethodDTO>,
 ) => {
-  const { name, description, price } = paymentMethodData;
+  const { name, description, fee } = paymentMethodData;
 
   return (
     await db
@@ -101,7 +101,7 @@ export const updatePaymentMethodService = async (
       .set({
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
-        ...(price !== undefined && { price }),
+        ...(fee !== undefined && { fee }),
       })
       .where(eq(PaymentMethodModel.id, paymentMethodId))
       .returning()

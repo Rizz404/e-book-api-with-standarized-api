@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ADD COLUMN "payment_invoice_url" text DEFAULT '' NOT NULL;

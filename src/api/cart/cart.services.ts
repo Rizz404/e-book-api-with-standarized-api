@@ -125,7 +125,7 @@ export const cartCheckoutService = async (
         totalShippingServicesFee,
         adminFee,
         discount,
-        paymentMethodFee: paymentMethod.price,
+        paymentMethodFee: paymentMethod.fee,
         paymentReference: paymentMethod.name,
         subtotalPrice,
         totalPrice,
