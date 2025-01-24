@@ -2,20 +2,18 @@ import express from "express";
 
 import { authMiddleware } from "../../middleware/auth.middleware";
 import roleValidationMiddleware from "../../middleware/role-validation.middleware";
-import schemaValidatorMiddleware from "../../middleware/schema-validator.middleware";
 import {
   deleteTransactionById,
   getTransactionById,
   getTransactions,
   updateTransactionById,
-  xenditTest,
+  xenditInvoiceWebhook,
 } from "./transaction.handlers";
-// import { createTransactionSchema } from "./transaction.validations";
 
 const router = express.Router();
 
 router.route("/").get(authMiddleware(), getTransactions);
-router.route("/test-xendit").post(xenditTest);
+router.route("/webhook/xendit").post(xenditInvoiceWebhook);
 
 router
   .route("/:transactionId")

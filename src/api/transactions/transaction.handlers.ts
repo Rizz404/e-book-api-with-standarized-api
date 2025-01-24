@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { RequestHandler } from "express";
 
+import db from "../../config/database.config";
 import { parsePagination } from "../../utils/api-request.utils";
 import {
   createErrorResponse,
@@ -17,11 +18,41 @@ import {
   findTransactionByColumnService,
   findTransactionByIdService,
   findTransactionsByFiltersService,
-  testZendit,
   updateTransactionService,
 } from "./transaction.services";
 
 // *==========*==========*==========POST==========*==========*==========*
+
+export const xenditInvoiceWebhook: RequestHandler = async (req, res) => {
+  try {
+    const callbackToken = req.headers["x-callback-token"];
+    const payload: {
+      status: "PENDING" | "PAID" | "EXPIRED" | "FAILED";
+      external_id: string;
+    } = req.body;
+
+    if (callbackToken !== process.env.XENDIT_CALLBACK_TOKEN) {
+      return createErrorResponse(res, "Unauthorized webhook request", 401);
+    }
+    const { external_id: externalId } = payload;
+
+    switch (payload.status) {
+      case "PAID":
+        await updateTransactionService(externalId, { status: "COMPLETED" });
+        break;
+      case "FAILED":
+        await updateTransactionService(externalId, { status: "FAILED" });
+        break;
+
+      default:
+        break;
+    }
+
+    createSuccessResponse(res, undefined, "Webhook received successfully", 200);
+  } catch (error) {
+    createErrorResponse(res, error);
+  }
+};
 
 // *==========*==========*==========GET==========*==========*==========*
 export const getTransactions: RequestHandler = async (req, res) => {
@@ -124,41 +155,6 @@ export const deleteTransactionById: RequestHandler = async (req, res) => {
       `Successfully deleted transaction with id ${deletedTransaction.id}`,
     );
   } catch (error) {
-    createErrorResponse(res, error);
-  }
-};
-
-export const xenditTest: RequestHandler = async (req, res) => {
-  try {
-    // Destructure with default values and type checking
-    const {
-      amount,
-      invoiceDuration = "172800", // Default value
-      externalId,
-      description,
-      currency = "IDR", // Default value
-      reminderTime = 1,
-      payerEmail,
-    } = req.body;
-
-    // Validate required fields
-    if (!amount || !externalId || !description || !payerEmail) {
-      return createErrorResponse(res, new Error("Missing required fields"));
-    }
-
-    const response = await testZendit({
-      amount,
-      invoiceDuration,
-      externalId,
-      description,
-      currency,
-      reminderTime,
-      payerEmail,
-    });
-
-    createSuccessResponse(res, response, "Successfully created Xendit invoice");
-  } catch (error) {
-    console.error("Xendit Test Error:", error);
     createErrorResponse(res, error);
   }
 };

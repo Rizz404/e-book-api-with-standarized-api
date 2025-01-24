@@ -150,11 +150,11 @@ export const createOrderService = async (
         const xenditInvoice = await xenditInvoiceClient.createInvoice({
           data: {
             amount: totalPrice,
-            externalId: `${user.id}-${Date.now()}`, // Unique ID
+            externalId: createTransaction.id, // * Pake yang dari transaction
             payerEmail: user.email,
             currency: "IDR",
-            invoiceDuration: "172800", // 48 hours
-            reminderTime: 1, // Reminder before expiry
+            invoiceDuration: "172800", // * 48 jam
+            reminderTime: 1, // * Reminder nanti pake socket kalo bisa
             paymentMethods: [paymentMethod.name],
             items: [
               {
