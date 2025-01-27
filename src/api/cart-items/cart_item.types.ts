@@ -18,7 +18,6 @@ export interface CartItemResponse {
   id: string;
   cartId: string;
   bookId: string;
-  priceAtCart: number;
   quantity: number;
   createdAt: Date;
   updatedAt: Date;

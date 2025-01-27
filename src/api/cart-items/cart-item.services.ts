@@ -17,7 +17,6 @@ export const cartItemResponse = {
   id: CartItemModel.id,
   cartId: CartItemModel.cartId,
   bookId: CartItemModel.bookId,
-  priceAtCart: CartItemModel.priceAtCart,
   quantity: CartItemModel.quantity,
   createdAt: CartItemModel.createdAt,
   updatedAt: CartItemModel.updatedAt,
@@ -46,13 +45,12 @@ export const createCartItemService = async (
   return (
     await db
       .insert(CartItemModel)
-      .values({ ...cartItemData, priceAtCart: book.price })
+      .values({ ...cartItemData })
       .returning()
       .onConflictDoUpdate({
         target: [CartItemModel.cartId, CartItemModel.bookId],
         set: {
           quantity: sql`${CartItemModel.quantity} + ${cartItemData.quantity}`,
-          priceAtCart: book.price,
         },
       })
   )[0];
@@ -145,11 +143,10 @@ export const updateCartItemService = async (
   cartItemId: string,
   cartItemData: Partial<InsertCartItemDTO>,
 ) => {
-  const { quantity, priceAtCart } = cartItemData;
+  const { quantity } = cartItemData;
 
   const updateData = {
     ...(quantity !== undefined && { quantity }),
-    ...(priceAtCart !== undefined && { priceAtCart }),
   };
 
   if (Object.keys(updateData).length === 0) {

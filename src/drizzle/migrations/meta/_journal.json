@@ -134,6 +134,13 @@
       "when": 1737716658578,
       "tag": "0018_add_invoice_url",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1737936599915,
+      "tag": "0019_remove_price_at_cart",
+      "breakpoints": true
     }
   ]
 }

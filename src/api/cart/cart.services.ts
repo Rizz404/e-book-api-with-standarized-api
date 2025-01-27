@@ -155,7 +155,7 @@ export const cartCheckoutService = async (
         const itemsCount = group.items.length;
 
         for (const item of group.items) {
-          const itemPrice = Number(item.priceAtCart) * Number(item.quantity);
+          const itemPrice = Number(item.book.price) * Number(item.quantity);
           subtotalPrice += itemPrice;
 
           // Bagi biaya ongkir ke semua item dalam grup
@@ -168,7 +168,7 @@ export const cartCheckoutService = async (
             shippingServiceId: Array.from(group.shippingServices)[0],
             transactionId: "",
             totalPrice: itemPrice + shippingPerItem,
-            priceSold: Number(item.priceAtCart),
+            priceSold: Number(item.book.price),
           });
         }
       }
@@ -204,7 +204,7 @@ export const cartCheckoutService = async (
             paymentMethods: [paymentMethod.name],
             items: cartItems.map((cartItem) => ({
               name: cartItem.book ? cartItem.book.title : "no title",
-              price: cartItem.priceAtCart,
+              price: cartItem.book.price,
               quantity: cartItem.quantity,
               category: "book",
               referenceId: cartItem.bookId,

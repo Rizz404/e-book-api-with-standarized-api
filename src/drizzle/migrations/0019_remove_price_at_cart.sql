@@ -1,0 +1,1 @@
+ALTER TABLE "cart_items" DROP COLUMN IF EXISTS "price_at_cart";

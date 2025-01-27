@@ -27,9 +27,6 @@ const CartItemModel = pgTable(
         onUpdate: "cascade",
       })
       .notNull(),
-    priceAtCart: decimal("price_at_cart", { precision: 10, scale: 2 }) // Harga buku saat ditambahkan ke keranjang
-      .notNull()
-      .$type<number>(),
     quantity: integer().notNull().default(0),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at")
