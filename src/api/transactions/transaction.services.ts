@@ -22,6 +22,7 @@ export const transactionResponse = {
   subtotalPrice: TransactionModel.subtotalPrice,
   totalPrice: TransactionModel.totalPrice,
   status: TransactionModel.status,
+  paymentInvoiceUrl: TransactionModel.paymentInvoiceUrl,
   createdAt: TransactionModel.createdAt,
   updatedAt: TransactionModel.updatedAt,
   user: {

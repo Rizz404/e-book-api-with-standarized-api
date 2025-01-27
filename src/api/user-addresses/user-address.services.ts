@@ -27,18 +27,18 @@ export const createUserAddressService = async (
     .where(
       and(
         eq(UserAddressModel.userId, userAddressData.userId),
-        eq(UserAddressModel.isPrimaryAddress, true),
+        eq(UserAddressModel.isPrimary, true),
       ),
     );
 
   if (currentPrimaryUserAddress) {
     await db
       .update(UserAddressModel)
-      .set({ isPrimaryAddress: false })
+      .set({ isPrimary: false })
       .where(
         and(
           eq(UserAddressModel.userId, currentPrimaryUserAddress.userId),
-          eq(UserAddressModel.isPrimaryAddress, true),
+          eq(UserAddressModel.isPrimary, true),
         ),
       );
   }
@@ -48,7 +48,6 @@ export const createUserAddressService = async (
   )[0];
 };
 
-// * Urutannya SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, OFFSET
 export const findUserAddressesByUserIdService = async (
   userId: string,
   limit: string,
@@ -86,40 +85,48 @@ export const updateUserAddressService = async (
   userAddressId: string,
   userAddressData: Partial<InsertUserAddressDTO>,
 ) => {
-  const { detailAddress, coordinate, isPrimaryAddress } = userAddressData;
+  // Handle primary address logic
+  if (userAddressData.isPrimary === true) {
+    const [currentAddress] = await db
+      .select({ userId: UserAddressModel.userId })
+      .from(UserAddressModel)
+      .where(eq(UserAddressModel.id, userAddressId));
 
-  const [currentPrimaryUserAddress] = await db
-    .select({
-      userId: UserAddressModel.userId,
-    })
-    .from(UserAddressModel)
-    .where(eq(UserAddressModel.id, userAddressId));
-
-  if (isPrimaryAddress === true) {
     await db
       .update(UserAddressModel)
-      .set({ isPrimaryAddress: false })
+      .set({ isPrimary: false })
       .where(
         and(
-          eq(UserAddressModel.userId, currentPrimaryUserAddress.userId),
-          eq(UserAddressModel.isPrimaryAddress, true),
+          eq(UserAddressModel.userId, currentAddress.userId),
+          eq(UserAddressModel.isPrimary, true),
         ),
       );
   }
+
+  const getUpdateFields = (data: Partial<InsertUserAddressDTO>) => {
+    return Object.entries(data).reduce((acc, [key, value]) => {
+      if (value !== undefined && key !== "isPrimary") {
+        // * Gunakan type assertion yang lebih spesifik
+        const validKey = key as keyof InsertUserAddressDTO;
+        acc[validKey] = value as never;
+      }
+      return acc;
+    }, {} as Partial<InsertUserAddressDTO>);
+  };
 
   return (
     await db
       .update(UserAddressModel)
       .set({
-        ...(detailAddress !== undefined && { detailAddress }),
-        ...(coordinate !== undefined && { coordinate }),
-        ...(isPrimaryAddress !== undefined && { isPrimaryAddress }),
+        ...getUpdateFields(userAddressData), // Auto-include all defined fields
+        ...(userAddressData.isPrimary !== undefined && {
+          isPrimary: userAddressData.isPrimary,
+        }),
       })
       .where(eq(UserAddressModel.id, userAddressId))
       .returning()
   )[0];
 };
-
 export const deleteUserAddressService = async (userAddressId: string) => {
   return (
     await db

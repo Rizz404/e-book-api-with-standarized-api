@@ -60,6 +60,7 @@ export const cartCheckoutService = async (
         .select(cartItemResponse)
         .from(CartItemModel)
         .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
+        .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
         .where(inArray(CartItemModel.id, cartItemIds))) as CartItemResponse[];
 
       if (!cartItems || cartItems.length <= 0) {
@@ -176,7 +177,7 @@ export const cartCheckoutService = async (
       const totalPrice =
         subtotalPrice + totalShippingServicesFee + adminFee - discount;
 
-      const [transaction] = await tx
+      let [transaction] = await tx
         .insert(TransactionModel)
         .values({
           userId,
@@ -215,10 +216,13 @@ export const cartCheckoutService = async (
         console.log("Xendit invoice created:", xenditInvoice);
 
         // * Simpan URL invoice (opsional)
-        await tx
-          .update(TransactionModel)
-          .set({ paymentInvoiceUrl: xenditInvoice.invoiceUrl })
-          .where(eq(TransactionModel.id, transaction.id));
+        transaction = (
+          await tx
+            .update(TransactionModel)
+            .set({ paymentInvoiceUrl: xenditInvoice.invoiceUrl })
+            .where(eq(TransactionModel.id, transaction.id))
+            .returning()
+        )[0];
       } catch (error) {
         console.error("Error creating Xendit invoice:", error);
         throw new Error("Failed to create invoice with Xendit.");
