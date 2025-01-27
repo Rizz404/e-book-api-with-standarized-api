@@ -2,11 +2,12 @@ import { count, desc, eq, inArray, SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
 import db from "../../config/database.config";
+import { xenditInvoiceClient } from "../../config/xendit-config";
 import BookModel from "../books/book.model";
 import CartModel, { InsertCartDTO, SelectCartDTO } from "../cart/cart.model";
-import CartItemModel, {
-  SelectCartItemDTO,
-} from "../cart-items/cart-item.model";
+import { CartItemResponse } from "../cart-items/cart_item.types";
+import CartItemModel from "../cart-items/cart-item.model";
+import { cartItemResponse } from "../cart-items/cart-item.services";
 import OrderModel from "../orders/order.model";
 import PaymentMethodModel from "../payment-methods/payment-method.model";
 import ShippingServiceModel from "../shipping-services/shipping-service.model";
@@ -37,127 +38,225 @@ export const cartCheckoutService = async (
   cartCheckoutItems: ICartCheckoutServiceParams[],
   paymentMethodId: string,
 ) => {
-  return await db.transaction(async (tx) => {
-    const cartItemIds = cartCheckoutItems.map(
-      (cartCheckoutItem) => cartCheckoutItem.cartItemId,
-    );
-    const shippingServiceIds = cartCheckoutItems.map(
-      (cartCheckoutItem) => cartCheckoutItem.shippingServiceId,
-    );
+  try {
+    return await db.transaction(async (tx) => {
+      const [user] = await tx
+        .select()
+        .from(UserModel)
+        .where(eq(UserModel.id, userId));
 
-    const cartItems = await tx
-      .select()
-      .from(CartItemModel)
-      .where(inArray(CartItemModel.id, cartItemIds));
-
-    console.log(`cartItems ${cartItems}`);
-
-    const shippingServices = await tx
-      .select()
-      .from(ShippingServiceModel)
-      .where(inArray(ShippingServiceModel.id, shippingServiceIds));
-
-    console.log(
-      "Shipping Services:",
-      JSON.stringify(shippingServices, null, 2),
-    );
-
-    shippingServices.forEach((service) => {
-      console.log(
-        `Shipping Service ID: ${service.id}, Price: ${service.price}`,
-      );
-    });
-
-    const [paymentMethod] = await tx
-      .select()
-      .from(PaymentMethodModel)
-      .where(eq(PaymentMethodModel.id, paymentMethodId));
-
-    console.log(`paymentMethod ${paymentMethod}`);
-
-    if (!paymentMethod) {
-      tx.rollback();
-      throw new Error("Invalid payment method");
-    }
-
-    let subtotalPrice = 0;
-    let totalShippingServicesFee = 0;
-    const adminFee = 2500;
-    const discount = 0;
-
-    const ordersData: IOrderData[] = cartItems.map((cartItem) => {
-      const shippingService = shippingServices.find(
-        (ss) =>
-          ss.id ===
-          cartCheckoutItems.find((ci) => ci.cartItemId === cartItem.id)
-            ?.shippingServiceId,
-      );
-
-      if (!shippingService) {
-        tx.rollback();
-        throw new Error("Invalid shipping service");
+      if (!user) {
+        throw new Error("User not found or something went wrong.");
       }
 
-      subtotalPrice += Number(cartItem.priceAtCart) * Number(cartItem.quantity);
-      totalShippingServicesFee += Number(shippingService.price);
+      const cartItemIds = cartCheckoutItems.map(
+        (cartCheckoutItem) => cartCheckoutItem.cartItemId,
+      );
+      const shippingServiceIds = cartCheckoutItems.map(
+        (cartCheckoutItem) => cartCheckoutItem.shippingServiceId,
+      );
 
-      return {
-        userId,
+      const cartItems = (await tx
+        .select(cartItemResponse)
+        .from(CartItemModel)
+        .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
+        .where(inArray(CartItemModel.id, cartItemIds))) as CartItemResponse[];
+
+      if (!cartItems || cartItems.length <= 0) {
+        throw new Error("Cart items invalid or something wrong");
+      }
+
+      // Kelompokkan cart items berdasarkan penjual
+      const sellerGroups = cartItems.reduce(
+        (groups, item) => {
+          const sellerId = item.book.seller.id;
+          groups[sellerId] = groups[sellerId] || {
+            items: [],
+            shippingServices: new Set(),
+          };
+          groups[sellerId].items.push(item);
+
+          // Tambahkan shipping service ID untuk grup ini
+          const checkoutItem = cartCheckoutItems.find(
+            (ci) => ci.cartItemId === item.id,
+          );
+          if (checkoutItem) {
+            groups[sellerId].shippingServices.add(
+              checkoutItem.shippingServiceId,
+            );
+          }
+          return groups;
+        },
+        {} as Record<
+          string,
+          { items: CartItemResponse[]; shippingServices: Set<string> }
+        >,
+      );
+
+      // Validasi shipping service per penjual
+      for (const sellerId of Object.keys(sellerGroups)) {
+        const group = sellerGroups[sellerId];
+        if (group.shippingServices.size > 1) {
+          throw new Error(
+            "Items dari penjual yang sama harus menggunakan layanan pengiriman yang sama",
+          );
+        }
+      }
+
+      const shippingServices = await tx
+        .select()
+        .from(ShippingServiceModel)
+        .where(inArray(ShippingServiceModel.id, shippingServiceIds));
+
+      if (!shippingServices || shippingServices.length <= 0) {
+        throw new Error("Shipping services invalid or something wrong");
+      }
+
+      const [paymentMethod] = await tx
+        .select()
+        .from(PaymentMethodModel)
+        .where(eq(PaymentMethodModel.id, paymentMethodId));
+
+      if (!paymentMethod) {
+        throw new Error("Payment method not found.");
+      }
+
+      const adminFee = 2500;
+      const discount = 0;
+
+      // Hitung biaya ongkir per penjual
+      let totalShippingServicesFee = 0;
+      const shippingFeeMap = new Map<string, number>(); // [sellerId, shippingFee]
+
+      for (const sellerId of Object.keys(sellerGroups)) {
+        const group = sellerGroups[sellerId];
+        const shippingServiceId = Array.from(group.shippingServices)[0];
+        const shippingService = shippingServices.find(
+          (ss) => ss.id === shippingServiceId,
+        );
+
+        if (!shippingService) {
+          throw new Error("Layanan pengiriman tidak valid");
+        }
+
+        // Hitung biaya ongkir sekali per penjual
+        const shippingFee = Number(shippingService.price);
+        shippingFeeMap.set(sellerId, shippingFee);
+        totalShippingServicesFee += shippingFee;
+      }
+
+      // Hitung total harga dan buat order data
+      let subtotalPrice = 0;
+      const ordersData: IOrderData[] = [];
+
+      for (const sellerId of Object.keys(sellerGroups)) {
+        const group = sellerGroups[sellerId];
+        const shippingFee = shippingFeeMap.get(sellerId) || 0;
+        const itemsCount = group.items.length;
+
+        for (const item of group.items) {
+          const itemPrice = Number(item.priceAtCart) * Number(item.quantity);
+          subtotalPrice += itemPrice;
+
+          // Bagi biaya ongkir ke semua item dalam grup
+          const shippingPerItem = shippingFee / itemsCount;
+
+          ordersData.push({
+            userId,
+            bookId: item.bookId,
+            quantity: item.quantity,
+            shippingServiceId: Array.from(group.shippingServices)[0],
+            transactionId: "",
+            totalPrice: itemPrice + shippingPerItem,
+            priceSold: Number(item.priceAtCart),
+          });
+        }
+      }
+
+      const totalPrice =
+        subtotalPrice + totalShippingServicesFee + adminFee - discount;
+
+      const [transaction] = await tx
+        .insert(TransactionModel)
+        .values({
+          userId,
+          paymentMethodId,
+          totalShippingServicesFee,
+          adminFee,
+          discount,
+          paymentMethodFee: paymentMethod.fee,
+          paymentReference: paymentMethod.name,
+          subtotalPrice,
+          totalPrice,
+        })
+        .returning();
+
+      try {
+        // * Payment gateway (Xendit)
+        const xenditInvoice = await xenditInvoiceClient.createInvoice({
+          data: {
+            amount: totalPrice,
+            externalId: transaction.id, // * Pake yang dari transaction
+            payerEmail: user.email,
+            currency: "IDR",
+            invoiceDuration: "172800", // * 48 jam
+            reminderTime: 1, // * Reminder nanti pake socket kalo bisa
+            paymentMethods: [paymentMethod.name],
+            items: cartItems.map((cartItem) => ({
+              name: cartItem.book ? cartItem.book.title : "no title",
+              price: cartItem.priceAtCart,
+              quantity: cartItem.quantity,
+              category: "book",
+              referenceId: cartItem.bookId,
+            })),
+          },
+        });
+
+        console.log("Xendit invoice created:", xenditInvoice);
+
+        // * Simpan URL invoice (opsional)
+        await tx
+          .update(TransactionModel)
+          .set({ paymentInvoiceUrl: xenditInvoice.invoiceUrl })
+          .where(eq(TransactionModel.id, transaction.id));
+      } catch (error) {
+        console.error("Error creating Xendit invoice:", error);
+        throw new Error("Failed to create invoice with Xendit.");
+      }
+
+      // * Perbarui transactionId di orders
+      ordersData.forEach((order) => {
+        order.transactionId = transaction.id;
+      });
+
+      const orders = await tx.insert(OrderModel).values(ordersData).returning();
+
+      const bookUpdates = cartItems.map((cartItem) => ({
         bookId: cartItem.bookId,
         quantity: cartItem.quantity,
-        shippingServiceId: shippingService.id,
-        transactionId: "", // * Diperbarui setelah transaksi dibuat
-        totalPrice:
-          Number(cartItem.priceAtCart) * Number(cartItem.quantity) +
-          Number(shippingService.price),
-        priceSold: Number(cartItem.priceAtCart),
-      };
-    });
+      }));
 
-    const totalPrice =
-      subtotalPrice + totalShippingServicesFee + adminFee - discount;
+      for (const book of bookUpdates) {
+        await tx
+          .update(BookModel)
+          .set({ stock: sql`${BookModel.stock} - ${book.quantity}` })
+          .where(eq(BookModel.id, book.bookId));
+      }
 
-    const [transaction] = await tx
-      .insert(TransactionModel)
-      .values({
-        userId,
-        paymentMethodId,
-        totalShippingServicesFee,
-        adminFee,
-        discount,
-        paymentMethodFee: paymentMethod.fee,
-        paymentReference: paymentMethod.name,
-        subtotalPrice,
-        totalPrice,
-      })
-      .returning();
-
-    // * Perbarui transactionId di orders
-    ordersData.forEach((order) => {
-      order.transactionId = transaction.id;
-    });
-
-    const orders = await tx.insert(OrderModel).values(ordersData).returning();
-
-    const bookUpdates = cartItems.map((cartItem) => ({
-      bookId: cartItem.bookId,
-      quantity: cartItem.quantity,
-    }));
-
-    for (const book of bookUpdates) {
+      // * Hapus semua cart items yang di-checkout
       await tx
-        .update(BookModel)
-        .set({ stock: sql`${BookModel.stock} - ${book.quantity}` })
-        .where(eq(BookModel.id, book.bookId));
-    }
+        .delete(CartItemModel)
+        .where(inArray(CartItemModel.id, cartItemIds));
 
-    // * Hapus semua cart items yang di-checkout
-    await tx
-      .delete(CartItemModel)
-      .where(inArray(CartItemModel.id, cartItemIds));
+      return { transaction, orders };
+    });
+  } catch (error) {
+    console.error("Error in createOrderService:", error);
 
-    return { transaction, orders };
-  });
+    throw new Error(
+      JSON.stringify(error) ?? "Something went wrong while creating order.",
+    );
+  }
 };
 
 export const findCartsByFiltersService = async (

@@ -7,10 +7,7 @@ import * as schema from "../drizzle/schema";
 import logger from "../utils/logger.utils";
 
 export const pool = new Pool({
-  connectionString:
-    process.env.STATUS === "development"
-      ? process.env.DATABASE_URL_LOCAL
-      : process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL as string,
   max: 20, // Maksimal 20 koneksi bersamaan
   min: 2, // Pertahankan minimal 2 koneksi
   idleTimeoutMillis: 60000, // Naikkan timeout idle menjadi 1 menit

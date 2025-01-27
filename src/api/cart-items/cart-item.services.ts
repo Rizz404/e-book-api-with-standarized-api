@@ -9,8 +9,11 @@ import CartItemModel, {
   InsertCartItemDTO,
   SelectCartItemDTO,
 } from "../cart-items/cart-item.model";
+import UserModel from "../users/user.model";
+import { CartItemResponse } from "./cart_item.types";
 
-const cartItemResponse = {
+// todo: Nanti bikin interface atau typenya miaw
+export const cartItemResponse = {
   id: CartItemModel.id,
   cartId: CartItemModel.cartId,
   bookId: CartItemModel.bookId,
@@ -18,12 +21,21 @@ const cartItemResponse = {
   quantity: CartItemModel.quantity,
   createdAt: CartItemModel.createdAt,
   updatedAt: CartItemModel.updatedAt,
-  book: {
-    title: BookModel.title,
-    description: BookModel.description,
-    stock: BookModel.stock,
-    price: BookModel.price,
-  },
+  book: sql`
+    json_build_object(
+      'title', ${BookModel.title},
+      'description', ${BookModel.description},
+      'stock', ${BookModel.stock},
+      'price', ${BookModel.price},
+      'seller', json_build_object(
+        'id', ${UserModel.id},
+        'username', ${UserModel.username},
+        'email', ${UserModel.email},
+        'isVerified', ${UserModel.isVerified},
+        'profilePicture', ${UserModel.profilePicture}
+      )
+    )
+  `.as("book"),
 };
 
 export const createCartItemService = async (
@@ -62,12 +74,16 @@ export const findCartItemsByCartId = async (
     .select(cartItemResponse)
     .from(CartItemModel)
     .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
+    .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
     .where(eq(CartItemModel.cartId, cartId))
     .orderBy(desc(CartItemModel.createdAt))
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems: +totalItems, cartItems };
+  return {
+    totalItems: +totalItems,
+    cartItems: cartItems as CartItemResponse[],
+  };
 };
 
 export const findCartItemsLikeColumnService = async (
@@ -87,23 +103,25 @@ export const findCartItemsLikeColumnService = async (
     .select(cartItemResponse)
     .from(CartItemModel)
     .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
+    .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
     .where(ilike(column, `%${value}%`))
     .orderBy(desc(CartItemModel.createdAt))
     .limit(parseInt(limit))
     .offset(offset);
 
-  return { totalItems, cartItems };
+  return { totalItems, cartItems: cartItems as CartItemResponse[] };
 };
 
 export const findCartItemByIdService = async (id: string) => {
-  return (
-    await db
-      .select(cartItemResponse)
-      .from(CartItemModel)
-      .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
-      .where(eq(CartItemModel.id, id))
-      .limit(1)
-  )[0];
+  const result = await db
+    .select(cartItemResponse)
+    .from(CartItemModel)
+    .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
+    .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
+    .where(eq(CartItemModel.id, id))
+    .limit(1);
+
+  return result[0] as CartItemResponse | undefined;
 };
 
 export const findCartItemByColumnService = async <
@@ -112,14 +130,15 @@ export const findCartItemByColumnService = async <
   column: Column,
   value: SelectCartItemDTO[Column], // Tipe data sesuai kolom
 ) => {
-  return (
-    await db
-      .select(cartItemResponse)
-      .from(CartItemModel)
-      .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
-      .where(eq(CartItemModel[column], value!))
-      .limit(1)
-  )[0];
+  const result = await db
+    .select(cartItemResponse)
+    .from(CartItemModel)
+    .leftJoin(BookModel, eq(CartItemModel.bookId, BookModel.id))
+    .leftJoin(UserModel, eq(BookModel.sellerId, UserModel.id))
+    .where(eq(CartItemModel[column], value!))
+    .limit(1);
+
+  return result[0] as CartItemResponse | undefined;
 };
 
 export const updateCartItemService = async (
